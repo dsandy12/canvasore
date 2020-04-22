@@ -16,4 +16,14 @@ The main features of CanvasOre include:
 5. Abiltiy to automatically generate XML report files showing anonymized student perofrmance against each performance indicator (outcome).
 
 # Installation
-This section briefly describes how to install and build CanvasOre.  The build process uses gradle and Java SE 13.  You will need to install these tools before you can build the program.  Currently no pre-built images are provided on this repository.
+This section briefly describes how to install and build CanvasOre.  The build process uses Gradle and Java SE 13.  You will need to install these tools before you can build the program.  Currently no pre-built images are provided on this repository.
+More informaiton about the Gradle build tool can be found at gradle.org.
+
+Step 1: Download the repository from github
+Step 2: Build the and run the tool with gradle
+  From the canvas_ore_gr folder in the downloaded repository, execute the gradle 'run' task.  This will build and run the utility.  Note that if you are using Microsoft windows, you may be able to use the gradle wrapper executable provided in the repository by typing 
+  gradlew run
+at the command line.
+
+# Tutorials
+Please visit the CanvasOre YouTube Channel for tutorials on how to use CanvasOre.  The channel can be found here:
