@@ -26,4 +26,5 @@ Step 2: Build the and run the tool with gradle
 at the command line.
 
 # Tutorials
-Please visit the CanvasOre YouTube Channel for tutorials on how to use CanvasOre.  The channel can be found here:
+Please visit the CanvasOre YouTube Channel for tutorials on how to use CanvasOre.  The tutorial playlist can be found here:
+https://www.youtube.com/playlist?list=PLRYQhV5yOhBf5Y2GKcaLB_l6Kkq-DJDlp
