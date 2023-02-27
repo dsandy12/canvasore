@@ -17,9 +17,9 @@ import java.util.logging.Logger;
  */
 public class Assignments extends ArrayList<Assignment> implements ProvidesLoadingStatus {
 	private static final long serialVersionUID = 1L;
-	private LoadingStatus loadingStatus = new LoadingStatus();
+	private final LoadingStatus loadingStatus = new LoadingStatus();
 	private String course_id;
-	private String assignment_group;
+	private final String assignment_group;
 	
     /**
      * Constructor for the assignments.  Assignments are initialized from data from Canvas

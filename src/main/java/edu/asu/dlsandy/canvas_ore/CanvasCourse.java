@@ -13,12 +13,12 @@ import java.util.GregorianCalendar;
  *  The representation of a single canvas course.
  */
 public class CanvasCourse {
-    private String account_id;
-    private String name;
-    private String course_code;
-    private CanvasEnrollments enrollments;
-    private GregorianCalendar start_date;
-    private String id;
+    private final String account_id;
+    private final String name;
+    private final String course_code;
+    private final CanvasEnrollments enrollments;
+    private final GregorianCalendar start_date;
+    private final String id;
     
     /**
      * Constructor for the course.  

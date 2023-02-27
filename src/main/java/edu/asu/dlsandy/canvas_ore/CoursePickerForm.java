@@ -146,7 +146,7 @@ public class CoursePickerForm extends Stage {
         if (!exitOkay) return null;
         for (int i=0;i<courses.size();i++) {
             course = courses.get(i);
-            if (course.getCourseCode().compareTo((String)coursesList.getFocusModel().getFocusedItem())==0) {
+            if (course.getCourseCode().compareTo(coursesList.getFocusModel().getFocusedItem())==0) {
                 return course;
             }
         }
@@ -158,10 +158,10 @@ public class CoursePickerForm extends Stage {
      */
     private void applyFilters()
     {
-        String yrchoice = (String)yearChoice.getValue();
+        String yrchoice = yearChoice.getValue();
         int semMonth = 0; 
         if (semesterChoice.getValue() != null) {
-            switch ((String)semesterChoice.getValue()) {
+            switch (semesterChoice.getValue()) {
                 case "Fall":
                     semMonth = 8;
                     break;

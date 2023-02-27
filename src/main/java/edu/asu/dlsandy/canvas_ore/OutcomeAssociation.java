@@ -15,7 +15,7 @@ package edu.asu.dlsandy.canvas_ore;
  * 4. a quiz group of questions in canvas
  */
     public class OutcomeAssociation {
-        private String assignmentGroupName;
+        private final String assignmentGroupName;
         private String assignmentName;
         private String rubricCriterion;
         private String questionGroup;       // used for quizzes only
@@ -79,9 +79,8 @@ package edu.asu.dlsandy.canvas_ore;
             if ((rubricCriterion==null)&&(this.rubricCriterion!=null)) return false;
             if ((rubricCriterion!=null)&&(this.rubricCriterion==null)) return false;
             if ((this.rubricCriterion!=null)&&(!this.rubricCriterion.equals(rubricCriterion))) return false;            
-            if ((this.questionGroup!=null)&&(!this.questionGroup.equals(questionGroup))) return false;            
-            if ((this.questionBank!=null)&&(!this.questionBank.equals(questionBank))) return false;
-            return true;
+            if ((this.questionGroup!=null)&&(!this.questionGroup.equals(questionGroup))) return false;
+            return (this.questionBank == null) || (this.questionBank.equals(questionBank));
         }
         
         /**
@@ -127,7 +126,7 @@ package edu.asu.dlsandy.canvas_ore;
 			// association
 			if (rubricCriterion!=null) return rubricCriterion;
 			if (questionGroup!=null) {
-				if (questionBank != null) return new String(questionGroup + " -- " + questionBank);
+				if (questionBank != null) return questionGroup + " -- " + questionBank;
 				return questionGroup;
 			}
 			if (assignmentName!=null) return assignmentName;

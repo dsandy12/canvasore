@@ -32,7 +32,7 @@ public class JsonObject extends TreeMap<String, JsonAbstractValue> implements Js
         while (it.hasNext()) {
             for (int i=0;i<indent+3;i++) System.out.print(" ");
             Map.Entry<String,JsonAbstractValue> me = it.next();
-            JsonAbstractValue av = (JsonAbstractValue)me.getValue();
+            JsonAbstractValue av = me.getValue();
             System.out.print(me.getKey());
             System.out.print(":");
             av.dump(indent+3);
@@ -62,7 +62,7 @@ public class JsonObject extends TreeMap<String, JsonAbstractValue> implements Js
             StringBuilder sb = new StringBuilder();
             while (it.hasNext()) {
                 Map.Entry<String,JsonAbstractValue> me = it.next();
-                JsonAbstractValue av = (JsonAbstractValue)me.getValue();
+                JsonAbstractValue av = me.getValue();
                 sb.append(me.getKey());
                 sb.append(":");
                 sb.append(av.getValue(""));

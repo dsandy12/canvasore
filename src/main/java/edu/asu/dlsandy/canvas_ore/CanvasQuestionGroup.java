@@ -25,7 +25,7 @@ public class CanvasQuestionGroup {
 	CanvasQuestionBank bank;
     // a map of scores for this group.  The primary key is the student id.  
     TreeMap<String,Double> student_scores;  
-    private LoadingStatus loadingStatus = new LoadingStatus();
+    private final LoadingStatus loadingStatus = new LoadingStatus();
 
     /**
      * constructor - initialize the object by reading information from Canvas LMS
@@ -91,8 +91,8 @@ public class CanvasQuestionGroup {
 	 * returns the question bank associated with this group if one exists,
 	 * otherwise, null.
 	 */
-	public CanvasQuestionBank getBank() {return bank;}; 
-	
+	public CanvasQuestionBank getBank() {return bank;}
+
 	/**
 	 * load grades associated with questions in this question group.  Because
 	 * this operation could take a long time, a progress bar is displayed while loading

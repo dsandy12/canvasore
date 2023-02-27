@@ -27,8 +27,7 @@ public class JsonResultFactory {
                 strpos++;
                 return result;
             }
-            ignoreNext = false;
-            if (str.charAt(strpos)=='\\') ignoreNext = true;
+            ignoreNext = str.charAt(strpos) == '\\';
             strpos++;
         }
         return null;
@@ -58,7 +57,7 @@ public class JsonResultFactory {
      */
     public JsonAbstractValue build(String str) {
         // trim leading and trailing whitespace
-        this.str = new String(str.trim());
+        this.str = str.trim();
         strpos = 0;
         return builder();
     }
@@ -77,7 +76,7 @@ public class JsonResultFactory {
                 // create and build the object or string
                 JsonAbstractValue obj = builder();
                 if (obj==null) {
-                    System.err.println("null object returned at "+String.valueOf(strpos));
+                    System.err.println("null object returned at "+ strpos);
                     return null;
                 }
                 cs.add(obj);
@@ -91,7 +90,7 @@ public class JsonResultFactory {
                 if (str.charAt(strpos)==',') strpos++;                
             }
             if (str.charAt(strpos)!=']') {
-                System.err.println("']' expected but none found"+String.valueOf(strpos));               
+                System.err.println("']' expected but none found"+ strpos);
                 return null;
             }
             strpos++;

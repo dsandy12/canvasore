@@ -15,7 +15,7 @@ import java.io.IOException;
  * specific data types.
  */
 public class JsonValue implements JsonAbstractValue {
-    private String value;
+    private final String value;
 
     @Override
     /**
@@ -99,8 +99,8 @@ public class JsonValue implements JsonAbstractValue {
      */
     public String  getHandle(String specifier) {
         return getValue(specifier);
-    };   
-    
+    }
+
     @Override
     /**
      * write the JsonValue to the file specified by the BufferedWriter parameter

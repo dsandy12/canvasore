@@ -16,7 +16,7 @@ import java.util.ArrayList;
 public class CanvasOutcome {
     private String title;
     private String description;
-    private ArrayList<OutcomeAssociation> associations;
+    private final ArrayList<OutcomeAssociation> associations;
 
     /*
      * constructor - initialize a blank outcome
@@ -64,7 +64,7 @@ public class CanvasOutcome {
         for (OutcomeAssociation oa:associations) {
             // for each association in the outcome, check to make sure that it 
             // exists an assignment in one of the assignment groups
-            if (groups.contains(oa.getAssignmentGroupName(),oa.getAssignmentName(),oa.getRubricCriterion()) == false) return false;
+            if (!groups.contains(oa.getAssignmentGroupName(), oa.getAssignmentName(), oa.getRubricCriterion())) return false;
         }
         return true;
     }

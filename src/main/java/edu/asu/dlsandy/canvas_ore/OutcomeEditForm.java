@@ -137,7 +137,7 @@ public class OutcomeEditForm extends Stage {
                 // if this outcome association has an assignment, see if 
                 // a matching assignment can be found as a sub-item for this 
                 // assignment group
-                for (TreeItem<OutcomeAssociation> treeassignment:((CheckBoxTreeItem<OutcomeAssociation>)treegroup).getChildren()) {
+                for (TreeItem<OutcomeAssociation> treeassignment: treegroup.getChildren()) {
                     if (treeassignment.getValue().getAssignmentName().equals(oa.getAssignmentName())) {
                         // An assignment with a matching name has been found
                         if ((oa.getRubricCriterion()==null)&&(oa.getQuestionGroup()==null)) {
@@ -147,7 +147,7 @@ public class OutcomeEditForm extends Stage {
                         
                         // This outcome association has a rubric/group/bank criterion,
                         // check to see if a matching one exists in the tree
-                        for (TreeItem<OutcomeAssociation> treeLevel3:((CheckBoxTreeItem<OutcomeAssociation>)treeassignment).getChildren()) {
+                        for (TreeItem<OutcomeAssociation> treeLevel3: treeassignment.getChildren()) {
                             if (treeLevel3.getValue().matches(oa)) {
                             	// a match has been found
                                 return;
@@ -252,7 +252,7 @@ public class OutcomeEditForm extends Stage {
         CheckBoxTreeItem<OutcomeAssociation> root = new CheckBoxTreeItem<>(new OutcomeAssociation("",null,null,null,null));
         root.setExpanded(true);
         assignmentList = new TreeView<OutcomeAssociation>(root);
-        assignmentList.setCellFactory(CheckBoxTreeCell.<OutcomeAssociation>forTreeView());    
+        assignmentList.setCellFactory(CheckBoxTreeCell.forTreeView());
         addCanvasAssociationsToTree(root);
         
         // loop to add outcome associations that are not present in the 

@@ -12,31 +12,31 @@ import java.util.TreeMap;
  *  The representation of a single course assignment as stored in Canvas LMS.
  */
 public class Assignment {
-    private String name;
-    private String id;
-    private String course_id;
-    private String due_at;
-    private double points_possible;
-    private CanvasRubric rubric;  // TODO: allow the assignment to have more than one rubric
-    private boolean is_quiz;
-    private String quiz_id;
+    private final String name;
+    private final String id;
+    private final String course_id;
+    private final String due_at;
+    private final double points_possible;
+    private final CanvasRubric rubric;  // TODO: allow the assignment to have more than one rubric
+    private final boolean is_quiz;
+    private final String quiz_id;
 
     // If this is a group assignment, boolean flag indicating whether or not
     // students will be graded individually.
-    private boolean grade_group_students_individually; 
+    private final boolean grade_group_students_individually;
     
     // The ID of the assignment's group set, if this is a group assignment. For
     // group discussions, set group_category_id on the discussion topic, not the
     // linked assignment.
-    private String group_category_id;
+    private final String group_category_id;
     private static CanvasUserGroups teams = null;
     private static boolean loadedTeams = false;
     private CanvasQuiz quiz;
     
     // a tree map with the student id as the key and the assignment score as the value
-    private TreeMap<String,Double> grades;
+    private final TreeMap<String,Double> grades;
     
-	private LoadingStatus loadingStatus = new LoadingStatus();
+	private final LoadingStatus loadingStatus = new LoadingStatus();
 
     /**
      * Constructor for the assignment.
@@ -128,7 +128,7 @@ public class Assignment {
     	        		loadingStatus.setChanged(true);
     	        		loadingStatus.setSubOperationDescription("Loading Team Information");
     	        	}
-    	            if ((group_category_id!=null)&&(!group_category_id.toLowerCase().equals("null"))) {
+    	            if ((group_category_id!=null)&&(!group_category_id.equalsIgnoreCase("null"))) {
     	                teams = new CanvasUserGroups(course_id);
     	            }
     	            loadedTeams = true;
@@ -148,10 +148,10 @@ public class Assignment {
     	        	pct = pct+step;
     	        	
     	            // ignore submissions that are not the most recently graded
-    	            if (submission.getGradeMatches()== false) continue; 
+    	            if (!submission.getGradeMatches()) continue;
     	            
     	            // take care of assignment grades
-    	            if ((teams!=null)&&(grade_group_students_individually==false)) {
+    	            if ((teams!=null)&&(!grade_group_students_individually)) {
     	                // if this is a group project, get a list of the students in the group
     	                // and add grade items for each student in the group
     	                team = teams.getAssociatedGroup(submission.getUserId());

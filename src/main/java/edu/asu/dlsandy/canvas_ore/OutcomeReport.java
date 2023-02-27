@@ -65,11 +65,11 @@ public class OutcomeReport {
         // place outcome names and descriptions in the symbol table
         for (int outcomeNumber = 1;outcomeNumber<=outcomes.size();outcomeNumber++) {
             CanvasOutcome outcome = outcomes.get(outcomeNumber-1);
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+"$-","");            
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".NAME$-", outcome.getTitle());
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".DESCRIPTION$-", outcome.getDescription());
+            symbolTable.put("$+O"+ outcomeNumber +"$-","");
+            symbolTable.put("$+O"+ outcomeNumber +".NAME$-", outcome.getTitle());
+            symbolTable.put("$+O"+ outcomeNumber +".DESCRIPTION$-", outcome.getDescription());
 
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".MAX$-",dfDecimal.format(assignment_groups.getMaximumOutcomePoints(outcome)));
+            symbolTable.put("$+O"+ outcomeNumber +".MAX$-",dfDecimal.format(assignment_groups.getMaximumOutcomePoints(outcome)));
 
             // for each assessment in the outcome, create the symbol table replacements
             ArrayList<OutcomeAssociation> associations = outcome.getAssociations();
@@ -77,15 +77,15 @@ public class OutcomeReport {
                 OutcomeAssociation association = associations.get(assocNum-1);
                 if (association.getAssignmentName() == null) {
                     // here if the association is for an assignment group 
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".A"+Integer.toString(assocNum)+"$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"$-",
                             "Assignment Group: "+association.getAssignmentGroupName());
                 } else if ((association.getRubricCriterion() == null) && (association.getQuestionGroup() == null)) {
                     // here if the association is for a complete assignment
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".A"+Integer.toString(assocNum)+"$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"$-",
                             association.getAssignmentName());                        
                 } else if (association.getRubricCriterion() != null) {
                     // here if the association is for a single rubric item
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".A"+Integer.toString(assocNum)+"$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"$-",
                             association.getAssignmentName()+", rubric criterion: "+association.getRubricCriterion());                                                
                 } else {
                 	// here if the association is for a quiz question group/bank
@@ -95,7 +95,7 @@ public class OutcomeReport {
                 	} else {
                 		questionBank = " -- " + association.getQuestionBank();
                 	}
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".A"+Integer.toString(assocNum)+"$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"$-",
                             association.getAssignmentName()+", question group: "+association.getQuestionGroup() + questionBank);                                                
                 }
                 
@@ -104,11 +104,11 @@ public class OutcomeReport {
                 int student_number =0;
                 for (String student_id:student_list) {
                     student_number++;
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".S"+Integer.toString(student_number)+".A"+Integer.toString(assocNum)+"$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".A"+ assocNum +"$-",
                             dfDecimal.format(assignment_groups.getStudentAssignmentPoints(association, student_id)));
                     
                     // Create a symbol table entry for the student's percentage score for this specific assignment.
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".S"+Integer.toString(student_number)+".A"+Integer.toString(assocNum)+"%$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".A"+ assocNum +"%$-",
                             dfPercent.format(assignment_groups.getStudentAssignmentPercent(association, student_id)));
                                         
                 }
@@ -128,7 +128,7 @@ public class OutcomeReport {
                     student_number++;
                     double student_outcome_avgpct = (double)Math.round(assignment_groups.getStudentAverageOutcomePercent(outcome, student_id)*1000.0)/1000.0;
                     // create the symbol table entry for the average percent score that the student earned on this outcome
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".S"+Integer.toString(student_number)+".AVGPCT$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".AVGPCT$-",
                             dfPercent.format(student_outcome_avgpct));
                     
                     double student_outcome_points = assignment_groups.getStudentOutcomePoints(outcome, student_id);
@@ -143,11 +143,11 @@ public class OutcomeReport {
                         // If there were no points for this assignment, set the percent earned for this assignment to 100%
                         student_outcome_percent = 1;
                     }
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".S"+Integer.toString(student_number)+".PERCENT$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".PERCENT$-",
                                 dfPercent.format(student_outcome_percent));
 
                     // create the symbol table entry for the total number of points that the student earned on this outcome
-                    symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".S"+Integer.toString(student_number)+".TOTAL$-",
+                    symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".TOTAL$-",
                             dfDecimal.format(assignment_groups.getStudentOutcomePoints(outcome, student_id)));
                     if (student_outcome_percent>=0.9) {total_epts++;
                     } else if (student_outcome_percent>=0.80) {total_apts++;
@@ -158,15 +158,15 @@ public class OutcomeReport {
                     } else if (student_outcome_avgpct>=0.70) {total_mpct++;
                     } else total_upct ++;
             }
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".PVE$-",Integer.toString(total_epts));
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".PVA$-",Integer.toString(total_apts));
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".PVM$-",Integer.toString(total_mpts));
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".PVU$-",Integer.toString(total_upts));
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".PVE%$-",Integer.toString(total_epct));
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".PVA%$-",Integer.toString(total_apct));
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".PVM%$-",Integer.toString(total_mpct));
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".PVU%$-",Integer.toString(total_upct));
-            symbolTable.put("$+O"+Integer.toString(outcomeNumber)+".TOTALSTUDENTS$-",Integer.toString(student_list.size()));
+            symbolTable.put("$+O"+ outcomeNumber +".PVE$-",Integer.toString(total_epts));
+            symbolTable.put("$+O"+ outcomeNumber +".PVA$-",Integer.toString(total_apts));
+            symbolTable.put("$+O"+ outcomeNumber +".PVM$-",Integer.toString(total_mpts));
+            symbolTable.put("$+O"+ outcomeNumber +".PVU$-",Integer.toString(total_upts));
+            symbolTable.put("$+O"+ outcomeNumber +".PVE%$-",Integer.toString(total_epct));
+            symbolTable.put("$+O"+ outcomeNumber +".PVA%$-",Integer.toString(total_apct));
+            symbolTable.put("$+O"+ outcomeNumber +".PVM%$-",Integer.toString(total_mpct));
+            symbolTable.put("$+O"+ outcomeNumber +".PVU%$-",Integer.toString(total_upct));
+            symbolTable.put("$+O"+ outcomeNumber +".TOTALSTUDENTS$-",Integer.toString(student_list.size()));
         }
     }
     

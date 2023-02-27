@@ -10,5 +10,5 @@ package edu.asu.dlsandy.canvas_ore;
  * Interface for object that will provide loading status to the progress bar
  */
 public interface ProvidesLoadingStatus {
-	public LoadingStatus getLoadingStatus();
+	LoadingStatus getLoadingStatus();
 }
