@@ -31,7 +31,8 @@ public class CanvasQuestionBank {
     public CanvasQuestionBank(String course_id, String bank_id)  {      
         // there is no api call to get one question bank - so get them all, then return the 
         // one we are interested in.
-        CanvasQuestionBanks banks = new CanvasQuestionBanks(course_id);
+        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+            CanvasQuestionBanks banks = new CanvasQuestionBanks(course_id);
         CanvasQuestionBank bank = banks.getById(bank_id);
         if (bank!= null) {
         	id = bank.id;

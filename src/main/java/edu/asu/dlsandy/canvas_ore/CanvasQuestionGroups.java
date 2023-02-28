@@ -6,6 +6,7 @@ package edu.asu.dlsandy.canvas_ore;
  */
 
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -13,6 +14,7 @@ import java.util.HashSet;
  * Representation of a list of all Canvas question groups associated with a specific quiz 
  */
 public class CanvasQuestionGroups extends ArrayList<CanvasQuestionGroup> {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -22,16 +24,18 @@ public class CanvasQuestionGroups extends ArrayList<CanvasQuestionGroup> {
 	 */
 	public CanvasQuestionGroups(String course_id, CanvasQuiz quiz)  {
 		// Get the quiz submissions.  
-		CanvasQuizSubmissions qsubmissions = new CanvasQuizSubmissions(course_id, quiz.getId());
+		@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+			CanvasQuizSubmissions quizSubmissions = new CanvasQuizSubmissions(course_id, quiz.getId());
 
 		// Find a submission that has every question answered
-		for (CanvasQuizSubmission qs:qsubmissions) {
+		for (CanvasQuizSubmission qs:quizSubmissions) {
 		    // for each submission, get the questions asked
-			CanvasQuizQuestions questions = new CanvasQuizQuestions(qs.getId());
+			@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+				CanvasQuizQuestions questions = new CanvasQuizQuestions(qs.getId());
 		
 			if (questions.size() == quiz.getQuestionCount()) {
 				// create a set of unique question group Ids
-				HashSet<String> groupIds = new HashSet<String>();
+				HashSet<String> groupIds = new HashSet<>();
 				for (CanvasQuizQuestion qq:questions) {
 					if (qq.getQuizGroupId() != null) {
 						groupIds.add(qq.getQuizGroupId());
@@ -39,11 +43,9 @@ public class CanvasQuestionGroups extends ArrayList<CanvasQuestionGroup> {
 				}
 				
 				// for each group id identified, create a quiz group object
-				if (groupIds!=null) {
-					for (String groupId:groupIds) {
-						CanvasQuestionGroup qg = new CanvasQuestionGroup(course_id,quiz.getId(),groupId);
-						add(qg);
-					}
+				for (String groupId:groupIds) {
+					CanvasQuestionGroup qg = new CanvasQuestionGroup(course_id,quiz.getId(),groupId);
+					add(qg);
 				}
 				break;
 			}
@@ -67,16 +69,15 @@ public class CanvasQuestionGroups extends ArrayList<CanvasQuestionGroup> {
     
     /**
      * load the grades for each question group in the list
+     *
      * @param submissions - all student submissions for the associated quiz
-     * @return true on success, otherwise false
      */
-	public boolean loadGrades(CanvasQuizSubmissions submissions) {
+	public void loadGrades(CanvasQuizSubmissions submissions) {
     	boolean result = true;
 		for (CanvasQuestionGroup g:this) {
     		result = result & g.loadGrades(submissions);
     	}
-    	return result;
-	}
+    }
 	
     /**
      * returns the number of points that a student earned against the specified outcome

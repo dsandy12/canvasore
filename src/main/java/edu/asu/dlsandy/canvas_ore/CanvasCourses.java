@@ -7,6 +7,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,7 +16,8 @@ import java.util.logging.Logger;
  * a representation of a list of canvas courses
  */
 public class CanvasCourses extends ArrayList<CanvasCourse> {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
 	/**
      * constructor - initialize from a canvas request of all courses associated with the canvas user

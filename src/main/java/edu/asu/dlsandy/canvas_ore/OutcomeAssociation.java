@@ -7,7 +7,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 /**
- * Representation of a association (mapping) between a course outcome and a specific
+ * Representation of an association (mapping) between a course outcome and a specific
  * assessed item.  Assessed items can be: 
  * 1. an assignment group in canvas
  * 2. a single assignment or quiz in canvas
@@ -60,7 +60,7 @@ package edu.asu.dlsandy.canvas_ore;
         }
         
         /**
-         * compare the association with the specified parameters to determine if they are equivaluent
+         * compare the association with the specified parameters to determine if they are equivalent
          * @param assignmentGroupName - the name of the assignment group in canvas (required)
          * @param assignmentName - the name of the assignment (optional if association is for assignment group only)
          * @param rubricCriterion - the name of the rubric criterion (optional if association is for the 
@@ -118,8 +118,8 @@ package edu.asu.dlsandy.canvas_ore;
         public String getQuestionBank() {return questionBank;}
 
 		@Override
-		/**
-		 * create a string representation of the object
+		/*
+		  create a string representation of the object
 		 */
 		public String toString() {
 			// create a string that represents the lowest level of the outcome

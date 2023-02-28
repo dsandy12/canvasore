@@ -6,13 +6,15 @@ package edu.asu.dlsandy.canvas_ore;
  */
 
 
+import java.io.Serial;
 import java.util.ArrayList;
 
 /**
  * a representation of all enrollments in a course
  */
 public class CanvasEnrollments extends ArrayList<String> {    
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
 	/**
      * constructor - initialize the enrollments from a JSON array that was received from
@@ -20,9 +22,9 @@ public class CanvasEnrollments extends ArrayList<String> {
      */
     public CanvasEnrollments(JsonArray enrollments) {
         if (enrollments!=null) {
-            for (int enrollment_idx = 0; enrollment_idx<enrollments.size();enrollment_idx++) {
+            for (JsonAbstractValue jsonAbstractValue : enrollments) {
                 // only concern ourselves with courses where the user is a TA or teacher
-                JsonObject enrollment = (JsonObject)enrollments.get(enrollment_idx);
+                JsonObject enrollment = (JsonObject) jsonAbstractValue;
                 add(enrollment.getValue("type"));
             }
         }        

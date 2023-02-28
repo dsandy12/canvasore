@@ -21,7 +21,7 @@ public class Assignment {
     private final boolean is_quiz;
     private final String quiz_id;
 
-    // If this is a group assignment, boolean flag indicating whether or not
+    // If this is a group assignment, boolean flag indicating whether
     // students will be graded individually.
     private final boolean grade_group_students_individually;
     
@@ -97,7 +97,7 @@ public class Assignment {
     /**
      * returns a CanvasRubric object for the rubric associated with this assignment.  If
      * no rubric exists, null is returned. 
-     * 
+     * <p>
      * TODO: allow the assignment to have more than one rubric
      */
     public CanvasRubric getRubric() {return rubric;}
@@ -111,23 +111,18 @@ public class Assignment {
     /**
      * Load the grades associated with the assignment.  Returns true on success, otherwise false.
      */
-    public boolean loadGrades() {
+    public void loadGrades() {
     	final class LoaderThread extends Thread {
     		public void run() {
     	        // load the submissions associated with the assignment, including rubric
     	        // assessments
-	        	synchronized (loadingStatus) {
-	        		loadingStatus.setChanged(true);
-	        		loadingStatus.setSubOperationDescription("Loading Submissions");
-	        	}
-    	        CanvasSubmissions submissions = new CanvasSubmissions(course_id,id);
+                loadingStatus.setStatus(null,"Loading Submissions", -1);
+    	        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+                    CanvasSubmissions submissions = new CanvasSubmissions(course_id,id);
     	        
     	        // load the teams
     	        if (!loadedTeams) {
-    	        	synchronized (loadingStatus) {
-    	        		loadingStatus.setChanged(true);
-    	        		loadingStatus.setSubOperationDescription("Loading Team Information");
-    	        	}
+                    loadingStatus.setStatus(null,"Loading Team Information", -1);
     	            if ((group_category_id!=null)&&(!group_category_id.equalsIgnoreCase("null"))) {
     	                teams = new CanvasUserGroups(course_id);
     	            }
@@ -140,11 +135,7 @@ public class Assignment {
 
     	        // loop through each submission
     	        for (CanvasSubmission submission:submissions) {
-    	        	synchronized (loadingStatus) {
-    	        		loadingStatus.setChanged(true);
-    	        		loadingStatus.setSubOperationDescription("Processing Scores for Submission : "+submission.getId());
-    	        		loadingStatus.setPercentDone(pct);
-    	        	}
+                    loadingStatus.setStatus(null,"Processing Scores for Submission : "+submission.getId(), pct);
     	        	pct = pct+step;
     	        	
     	            // ignore submissions that are not the most recently graded
@@ -167,8 +158,7 @@ public class Assignment {
     	        }
     	            
 	        	synchronized (loadingStatus) {
-	        		loadingStatus.setChanged(true);
-	        		loadingStatus.setPercentDone(1.0);
+	        		loadingStatus.setStatus(null,null,1.0);
 	        	}
     		}
     	}
@@ -176,7 +166,7 @@ public class Assignment {
         // clear any existing grades
         grades.clear();
 
-    	loadingStatus.setMainOperationDescription("Loading Results for Assignment: "+name);
+    	loadingStatus.setStatus("Loading Results for Assignment: "+name,null,-1);
     	ProgressDlg progress = new ProgressDlg(loadingStatus);
     	LoaderThread loader = new LoaderThread();
     	loader.start();
@@ -193,7 +183,6 @@ public class Assignment {
     	// if the assignment is a quiz, load the question bank specific scores
         if (is_quiz) quiz.loadGrades(course_id);
 
-        return result;
     }
 
     /**

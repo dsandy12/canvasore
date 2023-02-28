@@ -8,6 +8,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -15,10 +16,11 @@ import java.util.TreeMap;
 
 
 /**
- * Representation of a Json oject element.  This is a concrete implementation of the JavaAbstractValue class. 
+ * Representation of a Json object element.  This is a concrete implementation of the JavaAbstractValue class.
  */
 public class JsonObject extends TreeMap<String, JsonAbstractValue> implements JsonAbstractValue {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
 	@Override
 	/* 
@@ -47,8 +49,8 @@ public class JsonObject extends TreeMap<String, JsonAbstractValue> implements Js
      * returns a string value of the specified element where the specifier
      * is of the form:
      * 		Empty - return the entire object
-     * 		key
-     * 		key[index].specifier
+     * 		key,
+     * 		key[index].specifier,
      * 		key.specifier
      */
     public String getValue(String specifier) {
@@ -89,8 +91,8 @@ public class JsonObject extends TreeMap<String, JsonAbstractValue> implements Js
      * returns a boolean value of the specified element where the specifier
      * is of the form:
      * 		Empty - return the entire object
-     * 		key
-     * 		key[index].specifier
+     * 		key,
+     * 		key[index].specifier,
      * 		key.specifier
      */
     public boolean getBoolean(String specifier) {
@@ -118,8 +120,8 @@ public class JsonObject extends TreeMap<String, JsonAbstractValue> implements Js
      * returns an integer value of the specified element where the specifier
      * is of the form:
      * 		Empty - return the entire object
-     * 		key
-     * 		key[index].specifier
+     * 		key,
+     * 		key[index].specifier,
      * 		key.specifier
      */
     public int getInteger(String specifier) {
@@ -138,8 +140,8 @@ public class JsonObject extends TreeMap<String, JsonAbstractValue> implements Js
      * returns a double value of the specified element where the specifier
      * is of the form:
      * 		Empty - return the entire object
-     * 		key
-     * 		key[index].specifier
+     * 		key,
+     * 		key[index].specifier,
      * 		key.specifier
      */
     public double getDouble(String specifier) {
@@ -157,7 +159,7 @@ public class JsonObject extends TreeMap<String, JsonAbstractValue> implements Js
     /* 
      * write the object to a file specified by hte BufferedWriter parameter.
      */
-    public boolean writeToFile(BufferedWriter br) {
+    public void writeToFile(BufferedWriter br) {
         try {
             br.append('{');
             boolean isFirst = true;
@@ -170,9 +172,7 @@ public class JsonObject extends TreeMap<String, JsonAbstractValue> implements Js
                 entry.getValue().writeToFile(br);
             }
             br.append('}');
-        } catch (IOException ex) {
-            return false;
+        } catch (IOException ignored) {
         }
-        return true;
     }
 }

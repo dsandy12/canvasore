@@ -7,6 +7,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
@@ -16,7 +17,7 @@ import java.util.TreeMap;
  * against each rubric row which can be used for rubric-related outcome assessment
  */
 public class CanvasRubric {
-    ArrayList<RubricRow> rows;
+    final ArrayList<RubricRow> rows;
     // a map of maps.  The first key is the student id.  The second key
     // is the rubric criteria.  There should be no duplicate grades for a specific
     // criteria, so this should work fine.
@@ -27,12 +28,13 @@ public class CanvasRubric {
      * set of ratings where the rubric ratings that are worth the most points come 
      * before those worth fewer points.
      */
-    public class RubricRow extends ArrayList<RubricCell> {
-		private static final long serialVersionUID = 1L;
-		double points;
-        String id;
-        String description;
-        String long_description;
+    public static class RubricRow extends ArrayList<RubricCell> {
+		@Serial
+        private static final long serialVersionUID = 1L;
+		final double points;
+        final String id;
+        final String description;
+        final String long_description;
         
         /**
          * add a new rubric rating to the criteria, maintaining the 
@@ -61,11 +63,11 @@ public class CanvasRubric {
             points = obj.getDouble("points");
             id = obj.getValue("id");
             description = obj.getValue("description");
-            long_description = obj.getValue("long_descripion");
+            long_description = obj.getValue("long_description");
             JsonArray ratings = (JsonArray)obj.get("ratings");
             if (ratings != null) {
-                for (int i=0; i<ratings.size();i++) {
-                    RubricCell rr = new RubricCell((JsonObject)ratings.get(i));
+                for (JsonAbstractValue rating : ratings) {
+                    RubricCell rr = new RubricCell((JsonObject) rating);
                     addOrdered(rr);
                 }
             }
@@ -96,11 +98,11 @@ public class CanvasRubric {
     /**
      * Representation of a single cell within a Canvas Rubric
      */
-    public class RubricCell {
-        double points;
-        String id;
-        String description;
-        String long_description;
+    public static class RubricCell {
+        final double points;
+        final String id;
+        final String description;
+        final String long_description;
         
         /**
          * constructor - initialize from the provided JsonObject
@@ -139,10 +141,10 @@ public class CanvasRubric {
      * @param ary - a JsonArray that contains configuration information for the rubric
      */
     public CanvasRubric(JsonArray ary) {
-        rows = new ArrayList<RubricRow>();
+        rows = new ArrayList<>();
         if (ary==null) return;
-        for (int i = 0; i<ary.size(); i++) {
-            RubricRow rr = new RubricRow((JsonObject)ary.get(i));
+        for (JsonAbstractValue jsonAbstractValue : ary) {
+            RubricRow rr = new RubricRow((JsonObject) jsonAbstractValue);
             rows.add(rr);
         }
         student_scores = new TreeMap<>();

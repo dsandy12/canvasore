@@ -10,10 +10,9 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -40,9 +39,9 @@ import javafx.stage.Stage;
 public class OutcomeDlg extends Stage {   
     TreeView<String> outcomeList;
     boolean exitOkay;
-    CanvasOutcomes outcomes;
-    AssignmentGroups assignmentGroups;
-    final Image warnImage = new Image(getClass().getResourceAsStream("warning.bmp"));
+    final CanvasOutcomes outcomes;
+    final AssignmentGroups assignmentGroups;
+    final Image warnImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("warning.bmp")));
     
     /**
      * constructor - initialize the dialog box using the specified parameters.
@@ -57,7 +56,7 @@ public class OutcomeDlg extends Stage {
         this.assignmentGroups = assignmentGroups;
 
     	// initialize the dialog box icon
-        this.getIcons().add( new Image( CanvasOre.class.getResourceAsStream( "app_icon.png" )));
+        this.getIcons().add( new Image(Objects.requireNonNull(CanvasOre.class.getResourceAsStream("app_icon.png"))));
 
         // create the scene
         GridPane grid = new GridPane();
@@ -70,76 +69,64 @@ public class OutcomeDlg extends Stage {
         // add the done button
         Button doneButton = new Button(" Done ");
         doneButton.setDisable(true);
-        doneButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle(ActionEvent e) {
-                // check to see if there are any problems with the outcomes
-                // if so, prompt for an action.
-                if (!checkOutcomes()) {
-                    Alert alert = new Alert(AlertType.WARNING,"",ButtonType.OK,ButtonType.CANCEL);
-                    alert.setTitle("Warning - Invalid Assignments");
-                    alert.setHeaderText("Some outcomes are linked to assignments that don't exist for this course. ");
-                    alert.setContentText("Press ok to continue, or cancel to go back and fix the problem");
+        doneButton.setOnAction(e -> {
+            // check to see if there are any problems with the outcomes
+            // if so, prompt for an action.
+            if (!checkOutcomes()) {
+                Alert alert = new Alert(AlertType.WARNING, "", ButtonType.OK, ButtonType.CANCEL);
+                alert.setTitle("Warning - Invalid Assignments");
+                alert.setHeaderText("Some outcomes are linked to assignments that don't exist for this course. ");
+                alert.setContentText("Press ok to continue, or cancel to go back and fix the problem");
 
-                    Optional<ButtonType> result = alert.showAndWait();
-                    if (result.get() != ButtonType.OK){
-                        // ... user chose CANCEL or closed the dialog
-                        return;
-                    }
+                Optional<ButtonType> result = alert.showAndWait();
+                if ((result.isPresent())&&(result.get() != ButtonType.OK)) {
+                    // ... user chose CANCEL or closed the dialog
+                    return;
                 }
-                exitOkay = true;
-                close();
             }
+            exitOkay = true;
+            close();
         });
         grid.add(doneButton, 0,4);
 
         // add the cancel button
         Button cancelButton = new Button("Cancel");
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle(ActionEvent e) {
-                exitOkay = false;
-                close();
-            }
-        });      
+        cancelButton.setOnAction(e -> {
+            exitOkay = false;
+            close();
+        });
         grid.add(cancelButton, 0,5);
         
         // add the "add" button
         Button addButton = new Button("  Add  ");
-        addButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle(ActionEvent e) {
-                // open the add/edit dialog box
-                OutcomeEditForm form = new OutcomeEditForm(assignmentGroups);
-                CanvasOutcome new_outcome =form.editOutcome();
-                if (new_outcome!=null) {
-                    outcomes.add(new_outcome);
-                    doneButton.setDisable(false);
-                    updateList();
-                }
+        addButton.setOnAction(e -> {
+            // open the add/edit dialog box
+            OutcomeEditForm form = new OutcomeEditForm(assignmentGroups);
+            CanvasOutcome new_outcome = form.editOutcome();
+            if (new_outcome != null) {
+                outcomes.add(new_outcome);
+                doneButton.setDisable(false);
+                updateList();
             }
         });
         grid.add(addButton, 1,4);
 
         // Add the "edit" button
         Button editButton = new Button(" Edit ");
-        editButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle(ActionEvent e) {
-                // open the add/edit dialog box
-                int idx = outcomeList.getSelectionModel().getSelectedIndex();
-                if ((idx>=0) && (idx<outcomes.size())) {
-                    OutcomeEditForm form = new OutcomeEditForm(outcomes.get(idx),assignmentGroups);
-                    CanvasOutcome new_outcome = form.editOutcome();
-                    if (new_outcome!=null) {
-                        outcomes.remove(idx);
-                        outcomes.add(idx,new_outcome);
-                        doneButton.setDisable(false);
-                        
-                        // clear any warning icons for this outcome
-                        updateList();
-                    }
-                }              
+        editButton.setOnAction(e -> {
+            // open the add/edit dialog box
+            int idx = outcomeList.getSelectionModel().getSelectedIndex();
+            if ((idx >= 0) && (idx < outcomes.size())) {
+                OutcomeEditForm form = new OutcomeEditForm(outcomes.get(idx), assignmentGroups);
+                CanvasOutcome new_outcome = form.editOutcome();
+                if (new_outcome != null) {
+                    outcomes.remove(idx);
+                    outcomes.add(idx, new_outcome);
+                    doneButton.setDisable(false);
+
+                    // clear any warning icons for this outcome
+                    updateList();
+                }
             }
         });
         grid.add(editButton, 2,4);
@@ -149,22 +136,19 @@ public class OutcomeDlg extends Stage {
         grid.add(courseNumber, 0, 0);
 
         // create the list view of outcomes
-        outcomeList = new TreeView<String>();
+        outcomeList = new TreeView<>();
         TreeItem<String> root = new TreeItem<>();
         outcomeList.setRoot(root);
         outcomeList.setShowRoot(false);
         updateList();
         grid.add(outcomeList, 0,0, 3, 4);
-        outcomeList.addEventFilter(KeyEvent.KEY_PRESSED, new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent event) {
-                if (event.getCode().equals(KeyCode.DELETE)) {
-                    int idx = outcomeList.getSelectionModel().getSelectedIndex();
-                    if ((idx>=0) && (idx<outcomes.size())) {
-                        outcomes.remove(idx);
-                        doneButton.setDisable(false);
-                        updateList();
-                    }
+        outcomeList.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode().equals(KeyCode.DELETE)) {
+                int idx = outcomeList.getSelectionModel().getSelectedIndex();
+                if ((idx >= 0) && (idx < outcomes.size())) {
+                    outcomes.remove(idx);
+                    doneButton.setDisable(false);
+                    updateList();
                 }
             }
         });
@@ -187,7 +171,7 @@ public class OutcomeDlg extends Stage {
                     bw = new BufferedWriter(new FileWriter(file));
                     obj.writeToFile(bw);
                     bw.close();
-                } catch (IOException ex) {
+                } catch (IOException ignored) {
                 }
             }
         }
@@ -200,10 +184,10 @@ public class OutcomeDlg extends Stage {
     private void updateList() {
         TreeItem<String> root = outcomeList.getRoot();
         root.getChildren().clear();
-        for (int i=0;i<outcomes.size();i++) {
-            TreeItem<String> item = new TreeItem<String>(outcomes.get(i).getTitle());
+        for (CanvasOutcome outcome : outcomes) {
+            TreeItem<String> item = new TreeItem<>(outcome.getTitle());
             root.getChildren().add(item);
-            if (!outcomes.get(i).associationsExist(assignmentGroups)) {
+            if (outcome.associationsExist(assignmentGroups)) {
                 ImageView warningIcon = new ImageView(warnImage);
                 item.setGraphic(warningIcon);
             }
@@ -215,7 +199,7 @@ public class OutcomeDlg extends Stage {
      */
     private boolean checkOutcomes() {
         for (CanvasOutcome outcome:outcomes) {
-            if (!outcome.associationsExist(assignmentGroups)) return false;
+            if (outcome.associationsExist(assignmentGroups)) return false;
         }
         return true;
     }

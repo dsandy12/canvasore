@@ -7,12 +7,14 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 
 /**
  * Represents an implementation of a list of Canvas Question Bank objects 
  */
 public class CanvasQuestionBanks extends ArrayList<CanvasQuestionBank> {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -34,7 +36,7 @@ public class CanvasQuestionBanks extends ArrayList<CanvasQuestionBank> {
             if (ary != null) {
           		init(ary);
             }
-        } catch (IOException ex) {
+        } catch (IOException ignored) {
         }
         
     }  

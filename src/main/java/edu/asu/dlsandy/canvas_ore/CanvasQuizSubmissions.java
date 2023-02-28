@@ -7,6 +7,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,6 +16,7 @@ import java.util.logging.Logger;
  * Represents a list of all quiz submissions for a specific quiz.
  */
 public class CanvasQuizSubmissions extends ArrayList<CanvasQuizSubmission> {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**

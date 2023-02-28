@@ -36,13 +36,13 @@ public class CanvasOutcome {
         description = obj.getValue("description").replace("\\u003cp\\u003e", "").replace("\\u003c/p\\u003e", "\n");
         associations = new ArrayList<>();
         if (obj.get("associations")==null) return;
-        for (JsonAbstractValue aobj:(JsonArray)obj.get("associations")) {
+        for (JsonAbstractValue associationObject:(JsonArray)obj.get("associations")) {
             OutcomeAssociation association = new OutcomeAssociation(
-                    aobj.getValue("assignment_group_name"),
-                    aobj.getValue("assignment_name"),
-                    aobj.getValue("rubric_criterion"),
-                    aobj.getValue("question_group"),
-                    aobj.getValue("question_bank")
+                    associationObject.getValue("assignment_group_name"),
+                    associationObject.getValue("assignment_name"),
+                    associationObject.getValue("rubric_criterion"),
+                    associationObject.getValue("question_group"),
+                    associationObject.getValue("question_bank")
             );
             associations.add(association);           
         }
@@ -50,7 +50,7 @@ public class CanvasOutcome {
     
     
     /***************************************************************************
-     * This function checks to make sure that that all the associations in the 
+     * This function checks to make sure that all the associations in the
      * outcome object exist within a course.  This is done by checking to make
      * sure that each outcome assessment association matches an assignment 
      * within the AssignmentGroups parameter.
@@ -64,9 +64,9 @@ public class CanvasOutcome {
         for (OutcomeAssociation oa:associations) {
             // for each association in the outcome, check to make sure that it 
             // exists an assignment in one of the assignment groups
-            if (!groups.contains(oa.getAssignmentGroupName(), oa.getAssignmentName(), oa.getRubricCriterion())) return false;
+            if (!groups.contains(oa.getAssignmentGroupName(), oa.getAssignmentName(), oa.getRubricCriterion())) return true;
         }
-        return true;
+        return false;
     }
 
     /**
@@ -88,7 +88,7 @@ public class CanvasOutcome {
         
         obj.put("title", new JsonValue(title));
         obj.put("description", new JsonValue(description.trim()));
-        JsonArray arry = new JsonArray();
+        JsonArray array = new JsonArray();
         for (OutcomeAssociation association:associations) {
             JsonObject association_obj = new JsonObject();
             association_obj.put("assignment_group_name",new JsonValue(association.getAssignmentGroupName()));
@@ -104,9 +104,9 @@ public class CanvasOutcome {
             if (association.getQuestionBank()!=null) {
                 association_obj.put("question_bank",new JsonValue(association.getQuestionBank()));
             }
-            arry.add(association_obj);
+            array.add(association_obj);
         }
-        obj.put("associations", arry);
+        obj.put("associations", array);
         return obj;
     }
     

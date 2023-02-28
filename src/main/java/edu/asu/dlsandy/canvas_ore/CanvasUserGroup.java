@@ -6,13 +6,15 @@ package edu.asu.dlsandy.canvas_ore;
  */
 
 
+import java.io.Serial;
 import java.util.ArrayList;
 
 /**
  * Representation of a canvas user group
  */
 public class CanvasUserGroup extends ArrayList<String>{
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 	String groupId;
 	
 	/**

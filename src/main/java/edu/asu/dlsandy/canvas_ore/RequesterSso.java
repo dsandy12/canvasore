@@ -13,17 +13,16 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
  *
  * This class handles secure communications with canvas.asu.edu using the ASU SSO system.
- * 
+ * <p>
  * If authentication has not yet been performed, the class will open a small browser window
  * to allow the user to enter login credentials.  Since this is a standard browser interface,
  * if two-factor authentication is required, the user will also be prompted for that.
- * 
+ * <p>
  * Once authentication has completed, the authentication handshakes (handled in cookies) are
  * managed by an HttpCookieManager.
  * 
@@ -32,7 +31,7 @@ import java.net.URL;
  * All Rights Reserved
  */
 public class RequesterSso {
-	static CookieManager cookieManager = new CookieManager();
+	static final CookieManager cookieManager = new CookieManager();
 	static boolean authenticated = false;
 	static int lastResponse = 0;
 	
@@ -40,7 +39,7 @@ public class RequesterSso {
 	 * based on the previous canvas response, extract the next page to read from canvas.
 	 * 
 	 * @param link_response - the response from the last request from canvas
-	 * @return a string representing the next url to read to continue a multi-page canvas
+	 * @return a string representing the next url to read to continue a multipart canvas
 	 *   response.  If the last page has been read, "" is returned.
 	 */
     static private String getNextLink(String link_response) {
@@ -58,31 +57,29 @@ public class RequesterSso {
     }
     
     /**
-     * perform an http Get request from canvas using the uri specified.  Automatically
+     * perform a http Get request from canvas using the uri specified.  Automatically
      * perform authentication and Canvas response pagination requests if required.
      * 
      * @param uri - the uri to read from 
      * @return A string that represents the body of the response packet
-     * @throws MalformedURLException
-     * @throws IOException
      */
-    static public String httpGetRequest(String uri) throws MalformedURLException, IOException {
+    static public String httpGetRequest(String uri) throws IOException {
         // process a single get request to canvas, using supplied credentials 
     	
     	// if not yet authenticated, try to authenticate
     	if (!authenticated) {
     		// attempt to authenticate
         	CookieHandler.setDefault(cookieManager);
-        	AuthenticationDlg adlg = new AuthenticationDlg();
-        	adlg.showAndWait();
-        	if (!adlg.athenticationSuccess()) {
+        	AuthenticationDlg authenticationDlg = new AuthenticationDlg();
+        	authenticationDlg.showAndWait();
+        	if (!authenticationDlg.authenticationSuccess()) {
         		return null;
         	}
     	}
     	authenticated = true;
     	
     	String nextUrl = uri;
-        StringBuffer response = new StringBuffer();
+        StringBuilder response = new StringBuilder();
         
         // loop for each page in the response
         while (!nextUrl.isEmpty()) {
@@ -95,7 +92,7 @@ public class RequesterSso {
             
             // add cookies to the header - this includes any required authentication information
             if (cookieManager.getCookieStore().getCookies().size() > 0) {
-                StringBuffer cookies = new StringBuffer();
+                StringBuilder cookies = new StringBuilder();
             	int cookie_count = 0;
             	for (HttpCookie c:cookieManager.getCookieStore().getCookies()) {
                 	if (cookie_count != 0) {
@@ -151,13 +148,11 @@ public class RequesterSso {
 
     /**
      * send a GET request through the canvas API.
-     * 
-     * @param uri - the resource to request (not including "https://canvas.asu.edu/api/vi/")
+     *
+     * @param uri - the resource to request (not including <a href="https://canvas.asu.edu/api/vi/">...</a> )
      * @return a JsonAbstractValue representing the results of the request
-     * @throws MalformedURLException
-     * @throws IOException
      */
-    static public JsonAbstractValue apiGetRequest(String uri) throws MalformedURLException, IOException {
+    static public JsonAbstractValue apiGetRequest(String uri) throws IOException {
         // request the information from canvas
     	String strResponse = httpGetRequest("https://canvas.asu.edu/api/v1/"+uri);
         if (strResponse == null) {
@@ -166,8 +161,7 @@ public class RequesterSso {
         
         // convert the JSON-coded response into JSON objects
         JsonResultFactory rf = new JsonResultFactory();
-        JsonAbstractValue av = rf.build(strResponse);
-        return av;
+        return rf.build(strResponse);
     }
  
 }

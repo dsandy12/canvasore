@@ -8,6 +8,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,7 +17,8 @@ import java.util.logging.Logger;
  * Representation of a list of canvas assignment submissions
  */
 public class CanvasSubmissions extends ArrayList<CanvasSubmission> {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
 	/**
 	 * constructor - create and initialize the list by querying the canvas LMS api

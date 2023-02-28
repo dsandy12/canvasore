@@ -10,10 +10,10 @@ package edu.asu.dlsandy.canvas_ore;
  * representation of a canvas submission history record. 
  */
 public class CanvasSubmissionHistoryRecord {
-    boolean  correct;
-    double   points;
-    String   question_id;  
-    String   answer_id;
+    final boolean  correct;
+    final double   points;
+    final String   question_id;
+    final String   answer_id;
 
     /**
      * constructor - create and initialize the instance using information 
@@ -29,7 +29,7 @@ public class CanvasSubmissionHistoryRecord {
     }
     
     /**
-     * returns true of the question was anwered correctly, otherwise, false
+     * returns true of the question was answered correctly, otherwise, false
      */
     public boolean getCorrect() {return correct;}
 

@@ -13,15 +13,15 @@ import java.util.TreeMap;
  *  Representation of a single assignment submission
  */
 public class CanvasSubmission {
-    String  id;            
+    final String  id;
     double  score;         
-    String  user_id;       
+    final String  user_id;
     boolean grade_matches; 
     double  entered_score; 
-    boolean late;         
-    int     attempt;
+    final boolean late;
+    final int     attempt;
     // This tree map has the rubric id as the key  
-    TreeMap<String, Double> rubric_scores;
+    final TreeMap<String, Double> rubric_scores;
 
     /**
      * Constructor - initialize the instance from information contained in the 
@@ -61,7 +61,7 @@ public class CanvasSubmission {
     }
     
     /**
-     * returns true if this grade matches the one that is used in the gradebook, otherwise, false
+     * returns true if this grade matches the one that is used in the grade book, otherwise, false
      */
     public boolean getGradeMatches() {return grade_matches;}
 

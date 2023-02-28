@@ -5,8 +5,6 @@ package edu.asu.dlsandy.canvas_ore;
  * All Rights Reserved
  */
 
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Worker.State;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -15,13 +13,12 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
 import javafx.scene.web.*;
 import javafx.stage.Stage;
-import java.io.IOException;
-import java.net.*;
-import java.util.Timer;
+
+import java.util.Objects;
 
 /**
  * A web browser that opens the canvas login site and automatically 
- * closes when the canvas web site has been reached (following
+ * closes when the canvas website has been reached (following
  * authentication).  This class is meant to be used in conjunction
  * with a means of tracking cookies in order to gather the required
  * Canvas session and authentication information.
@@ -32,56 +29,12 @@ public class AuthenticationDlg extends Stage {
     final WebEngine webEngine = browser.getEngine();
     boolean done = false;
 
-    public boolean isAuthenticated(CookieManager cm) throws IOException {
-        String nextUrl = "https://canvas.asu.edu";
-        StringBuffer response = new StringBuffer();
-
-        if (false) {
-            // loop for each page in the response
-            while (!nextUrl.isEmpty()) {
-                URL obj;
-                obj = new URL(nextUrl);
-
-                // create the connection object
-                HttpURLConnection con;
-                con = (HttpURLConnection) obj.openConnection();
-
-                // add cookies to the header - this includes any required authentication information
-                if (cm.getCookieStore().getCookies().size() > 0) {
-                    StringBuffer cookies = new StringBuffer();
-                    int cookie_count = 0;
-                    for (HttpCookie c : cm.getCookieStore().getCookies()) {
-                        if (cookie_count != 0) {
-                            cookies.append(";");
-                        }
-                        cookie_count++;
-                        cookies.append(c.toString());
-                    }
-                    con.setRequestProperty("Cookie", cookies.toString());
-                    System.out.println(cookies.toString());
-                }
-                // request json responses
-                con.setRequestProperty("Accept", "application/json");
-
-                // Set request method for HTTP GET
-                con.setRequestMethod("GET");
-
-                // get the response
-                int lastResponse = con.getResponseCode();
-                System.out.println(lastResponse);
-                if (lastResponse != 200) return false;
-            }
-        }
-
-        return true;
-    }
-
     /**
      * Create the mini browser (authentication) dialog window and 
-     * wait for either the window to be closed or authenticatoin to complete. 
+     * wait for either the window to be closed or authentication to complete.
      */
     public AuthenticationDlg() {
-    	this.getIcons().add( new Image( CanvasOre.class.getResourceAsStream( "app_icon.png" )));
+    	this.getIcons().add( new Image(Objects.requireNonNull(CanvasOre.class.getResourceAsStream("app_icon.png"))));
     	
     	// initialize the scene for displaying the web view
     	GridPane grid = new GridPane();
@@ -99,25 +52,23 @@ public class AuthenticationDlg extends Stage {
         webEngine.load("https://canvas.asu.edu/login");
 
         // set up a listener for the webEngineLoader so that when each page loads
-        // we can check if the canvas web site has been reached
+        // we can check if the canvas website has been reached
         webEngine.getLoadWorker().stateProperty().addListener(
-                new ChangeListener<State>() {
-                  @Override public void changed(ObservableValue<? extends State> ov, State oldState, State newState) {
-                      if (newState == State.SUCCEEDED) {
+                (ov, oldState, newState) -> {
+                    if (newState == State.SUCCEEDED) {
                         // new page has loaded
                         setTitle(webEngine.getLocation());
                         if (!webEngine.getLocation().contains("https://canvas.asu.edu/?")) {
-                        	// here if the authentication is not yet complete - make the scene visible
-                        	browser.setVisible(true);
+                            // here if the authentication is not yet complete - make the scene visible
+                            browser.setVisible(true);
                         } else {
-                        	// Authentication is complete - close the window
-                        	done = true;
-                        	hide();
+                            // Authentication is complete - close the window
+                            done = true;
+                            hide();
                         }
-                      } else {
-                    	  // the page load is in progress - don't show window
-                    	  browser.setVisible(false);
-                      }
+                    } else {
+                        // the page load is in progress - don't show window
+                        browser.setVisible(false);
                     }
                 });
     }
@@ -128,7 +79,7 @@ public class AuthenticationDlg extends Stage {
     public WebEngine getEngine() {return webEngine;}
     
     /**
-     * @return true if authentication completed, otherwises false
+     * @return true if authentication completed, otherwise false
      */
-    public boolean athenticationSuccess() {return done;}
+    public boolean authenticationSuccess() {return done;}
 }

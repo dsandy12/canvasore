@@ -33,12 +33,13 @@ public class CanvasCourse {
         String canvas_date = obj.getValue("start_at");
         start_date = new GregorianCalendar();
         if (canvas_date == null) {
-            start_date.set(2000,1,1);                    
+            start_date.set(2000, Calendar.JANUARY,1);
         } else {
             String[] date_parts = canvas_date.split("[-T]");
-            start_date.set(Integer.valueOf(date_parts[0]),
-                    Integer.valueOf(date_parts[1]),
-                    Integer.valueOf(date_parts[2]));  
+            //noinspection MagicConstant
+            start_date.set(Integer.parseInt(date_parts[0]),
+                    Integer.parseInt(date_parts[1]),
+                    Integer.parseInt(date_parts[2]));
         }
         enrollments = new CanvasEnrollments((JsonArray)obj.get("enrollments"));
     }

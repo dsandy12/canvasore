@@ -8,16 +8,18 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Representation of a canvas submission history object.  The submission history object when related 
+ * Representation of a canvas submission history object.  The submission history object when
  * related to quiz assignments includes a list of all questions the student was asked as well as 
  * the score that they received on each question. For more information, consult the canvas LMS API
  */
 public class CanvasSubmissionHistory extends ArrayList<CanvasSubmissionHistoryRecord> {
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -51,7 +53,7 @@ public class CanvasSubmissionHistory extends ArrayList<CanvasSubmissionHistoryRe
     }  
     
 	/*
-	 * create and initialize all the sumission data records from the provided JSON array
+	 * create and initialize all the submission data records from the provided JSON array
 	 */
     private void init(JsonArray json_submission_data) {
         for (JsonAbstractValue json_submission_data_record:json_submission_data) {

@@ -10,25 +10,25 @@ package edu.asu.dlsandy.canvas_ore;
  * Represents an abstract factory class that builds JsonAbstractValues based on a Json-formatted string
  */
 public class JsonResultFactory {
-    int strpos;
+    int stringPosition;
     String str;
 
     /* 
-     * helper function used by builder to extract a double quoted string 
+     * helper function used by builder to extract a double-quoted string
      */
     private String getString() {
-        if (str.charAt(strpos)!='\"') return null;
-        strpos ++;
-        int start = strpos;
+        if (str.charAt(stringPosition)!='\"') return null;
+        stringPosition++;
+        int start = stringPosition;
         boolean ignoreNext = false;
-        while (strpos<str.length()) {
-            if ((str.charAt(strpos) == '\"') && (!ignoreNext)) {
-                String result = str.substring(start,strpos);
-                strpos++;
+        while (stringPosition <str.length()) {
+            if ((str.charAt(stringPosition) == '\"') && (!ignoreNext)) {
+                String result = str.substring(start, stringPosition);
+                stringPosition++;
                 return result;
             }
-            ignoreNext = str.charAt(strpos) == '\\';
-            strpos++;
+            ignoreNext = str.charAt(stringPosition) == '\\';
+            stringPosition++;
         }
         return null;
     }
@@ -38,14 +38,13 @@ public class JsonResultFactory {
      * JSON ending delimiters.
      */
     private String getRaw() {
-        int start = strpos;
-        while (strpos<str.length()) {
-            if ((str.charAt(strpos) == ',') || (str.charAt(strpos) == '}') ||
-                    (str.charAt(strpos) == ']')) {
-                String result = str.substring(start,strpos);
-                return result;
+        int start = stringPosition;
+        while (stringPosition <str.length()) {
+            if ((str.charAt(stringPosition) == ',') || (str.charAt(stringPosition) == '}') ||
+                    (str.charAt(stringPosition) == ']')) {
+                return str.substring(start, stringPosition);
             } 
-            strpos++;
+            stringPosition++;
         }
         return null;
     }
@@ -58,7 +57,7 @@ public class JsonResultFactory {
     public JsonAbstractValue build(String str) {
         // trim leading and trailing whitespace
         this.str = str.trim();
-        strpos = 0;
+        stringPosition = 0;
         return builder();
     }
     
@@ -68,85 +67,84 @@ public class JsonResultFactory {
     private JsonAbstractValue builder() {
         if (str.isEmpty()) return null;
         
-        if (str.charAt(strpos)=='[') {
-            strpos++;
+        if (str.charAt(stringPosition)=='[') {
+            stringPosition++;
             // here if we need to create a value set
             JsonArray cs = new JsonArray();
-            while ((strpos<str.length())&&((str.charAt(strpos)=='"')||str.charAt(strpos)=='{')) {
+            while ((stringPosition <str.length())&&((str.charAt(stringPosition)=='"')||str.charAt(stringPosition)=='{')) {
                 // create and build the object or string
                 JsonAbstractValue obj = builder();
                 if (obj==null) {
-                    System.err.println("null object returned at "+ strpos);
+                    System.err.println("null object returned at "+ stringPosition);
                     return null;
                 }
                 cs.add(obj);
 
                 // next character should either be a comma or an end brace
-                if (strpos>=str.length()) {
+                if (stringPosition >=str.length()) {
                     System.err.println("unexpected end of string");
                     return null;
                 }
-                if (str.charAt(strpos)==']') break;
-                if (str.charAt(strpos)==',') strpos++;                
+                if (str.charAt(stringPosition)==']') break;
+                if (str.charAt(stringPosition)==',') stringPosition++;
             }
-            if (str.charAt(strpos)!=']') {
-                System.err.println("']' expected but none found"+ strpos);
+            if (str.charAt(stringPosition)!=']') {
+                System.err.println("']' expected but none found"+ stringPosition);
                 return null;
             }
-            strpos++;
+            stringPosition++;
             return cs;
         }
 
-        if (str.charAt(strpos)=='{') {
-            strpos++;
+        if (str.charAt(stringPosition)=='{') {
+            stringPosition++;
             // here if we need to create a canvas object
             JsonObject co = new JsonObject();
             
             // check for an empty object.
-            if ((strpos<str.length()+1)&&(str.charAt(strpos)=='}')) {
-                strpos+=2;
+            if ((stringPosition <str.length()+1)&&(str.charAt(stringPosition)=='}')) {
+                stringPosition +=2;
                 return co;
             }
             
-            while (strpos<str.length()) {
+            while (stringPosition <str.length()) {
                 String key = getString();
                 if (key == null) return null;
-                if (strpos>=str.length()) {
+                if (stringPosition >=str.length()) {
                     System.err.println("unexpected end of string");
                     return null;
                 }
-                if (str.charAt(strpos)!=':') {
+                if (str.charAt(stringPosition)!=':') {
                     System.err.println("keyword separator expected.  None found");
                     return null;
                 }
-                strpos++;
+                stringPosition++;
                 // create and build the value
                 JsonAbstractValue obj = builder();
                 if (obj==null) return null;
                 co.put(key,obj);
 
                 // next character should either be a comma or an end brace
-                if (strpos>=str.length()) {
+                if (stringPosition >=str.length()) {
                     System.err.println("Unexpected end of string");
                     return null;
                 }
-                if (str.charAt(strpos)=='}') break;
-                if (str.charAt(strpos)==',') strpos++;                
+                if (str.charAt(stringPosition)=='}') break;
+                if (str.charAt(stringPosition)==',') stringPosition++;
             }
-            if (str.charAt(strpos)!='}') return null;
-            strpos++;
+            if (str.charAt(stringPosition)!='}') return null;
+            stringPosition++;
             return co;
         }
         
         // here if the line is a value primitive
-        if (str.charAt(strpos)=='"') {
+        if (str.charAt(stringPosition)=='"') {
             String s = getString();
             if (s==null) {
                 System.err.println("Null string returned");
                 return null;
             }
-            JsonValue cv = new JsonValue(s);
-            return cv;
+            return new JsonValue(s);
         } 
         // here if the value primitive is not quoted
         String s = getRaw();
@@ -154,8 +152,7 @@ public class JsonResultFactory {
             System.err.println("Null raw value returned");
             return null;
         }
-        JsonValue cv = new JsonValue(s);
-        return cv;
+        return new JsonValue(s);
         
         
     } 

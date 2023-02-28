@@ -7,6 +7,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,7 +30,7 @@ public class CanvasQuiz {
         try {
             JsonObject obj;
             obj = (JsonObject) RequesterSso.apiGetRequest("courses/"+course_id+"/quizzes/"+quiz_id);
-        	id = obj.getValue("id");
+        	id = Objects.requireNonNull(obj).getValue("id");
         	title = obj.getValue("title");
         	question_count = obj.getInteger("question_count");
         	groups = new CanvasQuestionGroups(course_id, this);
@@ -40,13 +41,13 @@ public class CanvasQuiz {
     
     /**
      * load the quiz group results from canvas
+     *
      * @param course_id - the id of the course associated with the quiz
-     * @return true on success, otherwise false
      */
-	public boolean loadGrades(String course_id) {
-    	CanvasQuizSubmissions qsubs = new CanvasQuizSubmissions(course_id, id);
-		return groups.loadGrades(qsubs);
-	}
+	public void loadGrades(String course_id) {
+    	CanvasQuizSubmissions quizSubmissions = new CanvasQuizSubmissions(course_id, id);
+        groups.loadGrades(quizSubmissions);
+    }
 	
 	/**
 	 * returns the id for the quiz

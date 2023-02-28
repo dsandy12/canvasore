@@ -7,10 +7,8 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.util.Calendar;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import java.util.Objects;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -29,18 +27,18 @@ import javafx.stage.Stage;
  * by semester, year and partial match on the course name.  
  */
 public class CoursePickerForm extends Stage {
-    CanvasCourses courses;
-    TextField courseNumberField;
-    ChoiceBox<String> yearChoice;
-    ListView<String> coursesList;
-    ChoiceBox<String> semesterChoice;
+    final CanvasCourses courses;
+    final TextField courseNumberField;
+    final ChoiceBox<String> yearChoice;
+    final ListView<String> coursesList;
+    final ChoiceBox<String> semesterChoice;
     boolean exitOkay = false;
 
     /**
      * constructor - initialize the dialog box
      */
     public CoursePickerForm() {
-    	this.getIcons().add( new Image( CanvasOre.class.getResourceAsStream( "app_icon.png" )));
+    	this.getIcons().add( new Image(Objects.requireNonNull(CanvasOre.class.getResourceAsStream("app_icon.png"))));
 
     	courses = new CanvasCourses();
 
@@ -57,80 +55,56 @@ public class CoursePickerForm extends Stage {
         grid.add(courseNumber, 4, 0);
 
         courseNumberField = new TextField();
-        courseNumberField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,String oldValue, String newValue) {
-                applyFilters();
-            }
-        });        
+        courseNumberField.textProperty().addListener((observable, oldValue, newValue) -> applyFilters());
         grid.add(courseNumberField, 5, 0);
 
         Label year = new Label("Year");
         grid.add(year, 4, 1);
         int current_year = Calendar.getInstance().get(Calendar.YEAR);
         
-        yearChoice = new ChoiceBox<String>();
+        yearChoice = new ChoiceBox<>();
         for (int yr = current_year - 3; yr<=current_year+1;yr++) {
             yearChoice.getItems().add(String.valueOf(yr));
         }
         yearChoice.setValue(String.valueOf(current_year));
-        yearChoice.getSelectionModel().selectedIndexProperty().addListener(new 
-            ChangeListener<Number>() {
-                @Override
-                public void changed(ObservableValue<? extends Number> ov, Number value, Number new_value) {
-                    // make the change to the control value, then apply the filters
-                    yearChoice.setValue(yearChoice.getItems().get((int)new_value));
-                    applyFilters();
-                }
-            }
+        yearChoice.getSelectionModel().selectedIndexProperty().addListener((ov, value, new_value) -> {
+            // make the change to the control value, then apply the filters
+            yearChoice.setValue(yearChoice.getItems().get((int) new_value));
+            applyFilters();
+        }
         );
         grid.add(yearChoice, 5, 1);
 
         Label semester = new Label("Semester");
         grid.add(semester, 4, 2);
-        semesterChoice = new ChoiceBox<String>();
+        semesterChoice = new ChoiceBox<>();
         semesterChoice.getItems().addAll("Fall","Spring","Summer","");
-        semesterChoice.getSelectionModel().selectedIndexProperty().addListener(new 
-            ChangeListener<Number>() {
-                @Override
-                public void changed(ObservableValue<? extends Number> ov, Number value, Number new_value) {
-                    // make the change to the control, then apply the filters
-                    semesterChoice.setValue(semesterChoice.getItems().get((int)new_value));
-                    applyFilters();
-                }
-            }
+        semesterChoice.getSelectionModel().selectedIndexProperty().addListener((ov, value, new_value) -> {
+            // make the change to the control, then apply the filters
+            semesterChoice.setValue(semesterChoice.getItems().get((int) new_value));
+            applyFilters();
+        }
         );
         grid.add(semesterChoice, 5, 2);
         
         Button okayButton = new Button("  Ok  ");
         okayButton.setDisable(true);
-        okayButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle(ActionEvent e) {
-                exitOkay = true;
-                close();
-            }
+        okayButton.setOnAction(e -> {
+            exitOkay = true;
+            close();
         });
         grid.add(okayButton, 1,4);
 
         Button cancelButton = new Button("Cancel");
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle(ActionEvent e) {
-                exitOkay = false;
-                close();
-            }
+        cancelButton.setOnAction(e -> {
+            exitOkay = false;
+            close();
         });
         grid.add(cancelButton, 2,4);
 
-        coursesList = new ListView<String>();
+        coursesList = new ListView<>();
         grid.add(coursesList, 0,0, 3, 4);
-        coursesList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,String oldValue, String newValue) {
-                okayButton.setDisable(false);
-            }
-        });
+        coursesList.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> okayButton.setDisable(false));
         applyFilters();
     }
     
@@ -144,9 +118,9 @@ public class CoursePickerForm extends Stage {
         showAndWait();
         
         if (!exitOkay) return null;
-        for (int i=0;i<courses.size();i++) {
-            course = courses.get(i);
-            if (course.getCourseCode().compareTo(coursesList.getFocusModel().getFocusedItem())==0) {
+        for (CanvasCourse courseObject : courses) {
+            course = courseObject;
+            if (course.getCourseCode().compareTo(coursesList.getFocusModel().getFocusedItem()) == 0) {
                 return course;
             }
         }
@@ -158,40 +132,32 @@ public class CoursePickerForm extends Stage {
      */
     private void applyFilters()
     {
-        String yrchoice = yearChoice.getValue();
+        String yearChoiceValue = yearChoice.getValue();
         int semMonth = 0; 
         if (semesterChoice.getValue() != null) {
-            switch (semesterChoice.getValue()) {
-                case "Fall":
-                    semMonth = 8;
-                    break;
-                case "Spring":
-                    semMonth = 1;
-                    break;
-                case "Summer":
-                    semMonth = 5;
-                    break;
-                default:
-                    semMonth = 0;
-            }
+            semMonth = switch (semesterChoice.getValue()) {
+                case "Fall" -> 8;
+                case "Spring" -> 1;
+                case "Summer" -> 5;
+                default -> 0;
+            };
         } 
 
         // set the contents of the list based on the filters
         coursesList.getItems().clear();
-        for (int i=0;i<courses.size();i++) {
-            CanvasCourse course = courses.get(i);
+        for (CanvasCourse course : courses) {
             // apply filter for course keyword
-            if ((courseNumberField.getText().isEmpty())||(course.getCourseCode().toUpperCase().contains(courseNumberField.getText().toUpperCase()))) {
+            if ((courseNumberField.getText().isEmpty()) || (course.getCourseCode().toUpperCase().contains(courseNumberField.getText().toUpperCase()))) {
                 // apply filter for year
-                if ((yrchoice.isEmpty())||(Integer.valueOf(yrchoice) == course.getStartDate().get(Calendar.YEAR))) {
+                if ((yearChoiceValue.isEmpty()) || (Integer.parseInt(yearChoiceValue) == course.getStartDate().get(Calendar.YEAR))) {
                     // apply filter for semester (start month should be within +/- 1 month of semester start month
-                    if ((semMonth == 0)||(Math.abs(course.getStartDate().get(Calendar.MONTH)-semMonth)<=1)) {
+                    if ((semMonth == 0) || (Math.abs(course.getStartDate().get(Calendar.MONTH) - semMonth) <= 1)) {
                         // show only courses where the user is enrolled as either an instructor or TA
-                        if ((course.getEnrollments().contains("ta"))||(course.getEnrollments().contains("teacher")))
-                        coursesList.getItems().add(course.getCourseCode());
+                        if ((course.getEnrollments().contains("ta")) || (course.getEnrollments().contains("teacher")))
+                            coursesList.getItems().add(course.getCourseCode());
                     }
                 }
-            }        
+            }
         }
     }
 }

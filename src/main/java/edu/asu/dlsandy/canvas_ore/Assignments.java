@@ -8,6 +8,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,6 +17,7 @@ import java.util.logging.Logger;
  *  The representation of a list of assignments as stored in Canvas LMS.
  */
 public class Assignments extends ArrayList<Assignment> implements ProvidesLoadingStatus {
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private final LoadingStatus loadingStatus = new LoadingStatus();
 	private String course_id;
@@ -53,7 +55,7 @@ public class Assignments extends ArrayList<Assignment> implements ProvidesLoadin
      * process can take a long time, a separate loader thread and progress window are used to 
      * display progress.
      * 
-     * @param jsonArray - an json array that contains the assignment information.
+     * @param jsonArray - a json array that contains the assignment information.
      */
     private void init(JsonArray jsonArray) {
     	// Loader thread to initialize each assignment and update the operation status 
@@ -65,20 +67,13 @@ public class Assignments extends ArrayList<Assignment> implements ProvidesLoadin
     	            Assignment assignment = new Assignment((JsonObject)obj);
     	            add(assignment);
     	        	pct = pct +  1.0/(double)jsonArray.size();
-    	        	synchronized (loadingStatus) {
-    	        		loadingStatus.setChanged(true);
-    	        		loadingStatus.setPercentDone(pct);
-    	        		loadingStatus.setSubOperationDescription(assignment.getName());
-    	        	}
+					loadingStatus.setStatus(null,assignment.getName(),pct);
     	        }
-	        	synchronized (loadingStatus) {
-	        		loadingStatus.setChanged(true);
-	        		loadingStatus.setPercentDone(1.0);
-	        	}
+				loadingStatus.setStatus(null,null,1.0);
     		}
     	}
-    	// initialize the progress bar and wait for the loading operatoin to complete
-    	loadingStatus.setMainOperationDescription("Loading Assignments for Group: "+assignment_group);
+    	// initialize the progress bar and wait for the loading operation to complete
+    	loadingStatus.setStatus("Loading Assignments for Group: "+assignment_group,null,-1);
     	ProgressDlg progress = new ProgressDlg(loadingStatus);
     	LoaderThread loader = new LoaderThread();
     	loader.start();
@@ -86,15 +81,13 @@ public class Assignments extends ArrayList<Assignment> implements ProvidesLoadin
     	
     	// if the dialog box is closed before loading completes, stop the
     	// loader thread
-    	synchronized(loadingStatus) {
-    		if (loadingStatus.getPercentDone()<1.0) {
-    			loader.interrupt();
-    		}
+        if (loadingStatus.getPercentDone()<1.0) {
+            loader.interrupt();
     	}
     	// wait for the loader to die
     	try {
 			loader.join();
-		} catch (InterruptedException e) {
+		} catch (InterruptedException ignored) {
 		}
     }
     
@@ -124,12 +117,10 @@ public class Assignments extends ArrayList<Assignment> implements ProvidesLoadin
     /**
      * load all the grades from canvas for every assignment associated with this instance
      */
-    public boolean loadGrades() {
-        boolean result = true;
+    public void loadGrades() {
         for (Assignment a:this) {
-            result |= a.loadGrades();
+            a.loadGrades();
         } 
-        return result;
     }
     
     /**

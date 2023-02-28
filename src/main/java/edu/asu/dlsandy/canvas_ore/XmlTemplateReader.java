@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * Class to read an xml template file from disk 
+ * Class to read a xml template file from disk
  */
 public class XmlTemplateReader extends BufferedReader {
 	
@@ -31,20 +31,20 @@ public class XmlTemplateReader extends BufferedReader {
     }
 
     @Override
-    /**
-     * This function will read a line until the ">" character or end of file
-     * is found.  In order for the ">" to count as the end of the line, the 
-     * ">" cannot be found in a quoted string within the file.
+    /*
+      This function will read a line until the ">" character or end of file
+      is found.  In order for the ">" to count as the end of the line, the
+      ">" cannot be found in a quoted string within the file.
      */
     public String readLine() throws IOException {
         StringBuilder result = new StringBuilder();
-        char[] cbuf = new char[1];
+        char[] buff = new char[1];
         boolean inQuotes = false;
         
-        while (read(cbuf,0,1)>0) {
+        while (read(buff,0,1)>0) {
             // read a character at a time, building the result as we go.
-            result.append(cbuf[0]);
-            switch (cbuf[0]) {
+            result.append(buff[0]);
+            switch (buff[0]) {
                 case '>':
                     if (!inQuotes) {
                         return result.toString();

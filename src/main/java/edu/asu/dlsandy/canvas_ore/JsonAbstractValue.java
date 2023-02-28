@@ -14,7 +14,7 @@ import java.io.BufferedWriter;
  */
 public interface JsonAbstractValue {
     void    dump(int indent);
-    boolean writeToFile(BufferedWriter br);
+    void writeToFile(BufferedWriter br);
     String  getValue(String specifier);
     int     getInteger(String specifier);
     double  getDouble(String specifier);

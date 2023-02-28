@@ -8,6 +8,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,7 +17,8 @@ import java.util.logging.Logger;
  *  The representation of the assignment groups in a course as stored in the Canvas LMS.
  */
 public class AssignmentGroups extends ArrayList<AssignmentGroup> {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
     /**
      * Constructor for the assignment groups.  Reads the information from Canvas
@@ -43,12 +45,10 @@ public class AssignmentGroups extends ArrayList<AssignmentGroup> {
      * Loads the grades for all the assignment groups.
      * Returns true on success, otherwise false.
      */
-    public boolean loadGrades() {
-        boolean result = true;
+    public void loadGrades() {
         for (AssignmentGroup ag:this) {
-            result |= ag.loadGrades();
-        } 
-        return result;
+            ag.loadGrades();
+        }
     }
     
     /**

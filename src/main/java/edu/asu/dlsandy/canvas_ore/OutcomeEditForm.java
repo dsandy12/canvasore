@@ -7,10 +7,8 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.util.ArrayList;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import java.util.Objects;
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -39,9 +37,9 @@ public class OutcomeEditForm extends Stage {
 	TextField titleField;
     TextArea descriptionField;
     CanvasOutcome outcome;
-    AssignmentGroups assignmentGroups;
+    final AssignmentGroups assignmentGroups;
     boolean exitOkay;
-    final Image warnImage = new Image(getClass().getResourceAsStream("warning.bmp"));
+    final Image warnImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("warning.bmp")));
     
     /**
      * constructor - initialize using list of assignment groups.  This constructor should be
@@ -63,7 +61,7 @@ public class OutcomeEditForm extends Stage {
         initModality(Modality.APPLICATION_MODAL);
         this.outcome = outcome;
         this.assignmentGroups = assignmentGroups;
-    	this.getIcons().add( new Image( CanvasOre.class.getResourceAsStream( "app_icon.png" )));
+    	this.getIcons().add( new Image(Objects.requireNonNull(CanvasOre.class.getResourceAsStream("app_icon.png"))));
         createForm();      
         titleField.setText(outcome.getTitle());
         descriptionField.setText(outcome.getDescription());
@@ -103,7 +101,7 @@ public class OutcomeEditForm extends Stage {
                 			  if (qgroup.getBank()!=null) {
                 				  bankTitle = qgroup.getBank().getTitle();
                 			  }
-                              CheckBoxTreeItem<OutcomeAssociation> sub_item = new CheckBoxTreeItem<OutcomeAssociation>(new OutcomeAssociation(group.getName(),assignment.getName(),null,qgroup.getName(),bankTitle));
+                              CheckBoxTreeItem<OutcomeAssociation> sub_item = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(), assignment.getName(), null, qgroup.getName(), bankTitle));
                               sub_item.setIndependent(true);
                               item.getChildren().add(sub_item);
                               item.setExpanded(true);                			  
@@ -130,7 +128,7 @@ public class OutcomeEditForm extends Stage {
             if (treegroup.getValue().getAssignmentGroupName().equals(oa.getAssignmentGroupName())) {
             	// the group matches
             	if (oa.getAssignmentName() == null) {
-                    // if this is a assessment group - do nothing
+                    // if this is an assessment group - do nothing
                 	return;
                 } 
                 
@@ -155,7 +153,7 @@ public class OutcomeEditForm extends Stage {
                         }
 
                         // here if a level 3 match has not been found - add the new association to the tree
-                        CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<OutcomeAssociation>(oa);
+                        CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<>(oa);
                         item.setIndependent(true);
                         ImageView rubricWarningIcon = new ImageView(warnImage);
                         item.setGraphic(rubricWarningIcon);
@@ -168,7 +166,7 @@ public class OutcomeEditForm extends Stage {
                 // here if the assignment is not found - add the association to the top of this
                 // assignment group
             	OutcomeAssociation oa2 = new OutcomeAssociation(oa.getAssignmentGroupName(),oa.getAssignmentName(),null,null,null);
-                CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<OutcomeAssociation>(oa2);
+                CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<>(oa2);
                 item.setExpanded(true);
                 item.setIndependent(true);
                 ImageView assignmentWarningIcon = new ImageView(warnImage);
@@ -180,7 +178,7 @@ public class OutcomeEditForm extends Stage {
         
     	// Here if the top-level association is not found.  Add it to the tree
     	OutcomeAssociation oa1 = new OutcomeAssociation(oa.getAssignmentGroupName(),null,null,null,null);
-	    CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<OutcomeAssociation>(oa1);
+	    CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<>(oa1);
 	    item.setIndependent(true);
 	    ImageView rubricWarningIcon = new ImageView(warnImage);
 	    item.setGraphic(rubricWarningIcon);
@@ -201,11 +199,8 @@ public class OutcomeEditForm extends Stage {
         setScene(new Scene(grid, 600, 500));
         
         titleField = new TextField();
-        titleField.textProperty().addListener(new ChangeListener<String>() {
-            @Override
-            public void changed(ObservableValue<? extends String> observable,String oldValue, String newValue) {
-            }
-        });        
+        titleField.textProperty().addListener((observable, oldValue, newValue) -> {
+        });
         grid.add(titleField, 0, 1, 4, 1);
 
         descriptionField = new TextArea();
@@ -213,37 +208,29 @@ public class OutcomeEditForm extends Stage {
         grid.add(descriptionField, 0, 3, 4, 3);
         
         Button doneButton = new Button(" Done ");
-        doneButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle(ActionEvent e) {
-                CanvasOutcome newOutcome = new CanvasOutcome();
-                newOutcome.setTitle(titleField.getText());
-                newOutcome.setDescription(descriptionField.getText());
-                setOutcomeAssociationsFromTree(newOutcome);
-                if (!newOutcome.associationsExist(assignmentGroups)) {
-                    // here the outcome has errors - there are some associations
-                    // that are invalid - show an error dialog box.
-                    Alert alert = new Alert(AlertType.WARNING);
-                    alert.setTitle("Invalid Outcome Specification");
-                    alert.setHeaderText("Outccome is linked to invalid assignments");
-                    alert.setContentText("Please remove the invalid assignment links (shown with warning icon) and try again.");
-                    alert.showAndWait();
-                    return;
-                }
-                exitOkay = true;
-                outcome = newOutcome;
-                close();
+        doneButton.setOnAction(e -> {
+            CanvasOutcome newOutcome = new CanvasOutcome();
+            newOutcome.setTitle(titleField.getText());
+            newOutcome.setDescription(descriptionField.getText());
+            setOutcomeAssociationsFromTree(newOutcome);
+            if (newOutcome.associationsExist(assignmentGroups)) {
+                // here the outcome has errors - there are some associations
+                // that are invalid - show an error dialog box.
+                Alert alert = new Alert(AlertType.WARNING);
+                alert.setTitle("Invalid Outcome Specification");
+                alert.setHeaderText("Outccome is linked to invalid assignments");
+                alert.setContentText("Please remove the invalid assignment links (shown with warning icon) and try again.");
+                alert.showAndWait();
+                return;
             }
+            exitOkay = true;
+            outcome = newOutcome;
+            close();
         });
         grid.add(doneButton, 0,15);
 
         Button cancelButton = new Button("Cancel");
-        cancelButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override 
-            public void handle(ActionEvent e) {
-                close();                
-            }
-        });
+        cancelButton.setOnAction(e -> close());
         grid.add(cancelButton, 1,15);
 
         Label title = new Label("Title");
@@ -251,7 +238,7 @@ public class OutcomeEditForm extends Stage {
 
         CheckBoxTreeItem<OutcomeAssociation> root = new CheckBoxTreeItem<>(new OutcomeAssociation("",null,null,null,null));
         root.setExpanded(true);
-        assignmentList = new TreeView<OutcomeAssociation>(root);
+        assignmentList = new TreeView<>(root);
         assignmentList.setCellFactory(CheckBoxTreeCell.forTreeView());
         addCanvasAssociationsToTree(root);
         
@@ -277,7 +264,7 @@ public class OutcomeEditForm extends Stage {
      * helper function to set check boxes based on outcome association object
      */
     private void setCheckBoxes(CheckBoxTreeItem<OutcomeAssociation>localroot, CanvasOutcome outcome) {
-        // set the check boxes based on the outcome object's associations
+        // set the checkboxes based on the outcome object's associations
     	if (outcome.associationExists(localroot.getValue())) {
     		localroot.setSelected(true);
     	}

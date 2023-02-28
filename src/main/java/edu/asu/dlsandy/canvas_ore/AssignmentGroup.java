@@ -13,11 +13,11 @@ import java.util.ArrayList;
  *  The representation of an assignment group as stored in the Canvas LMS.
  */
 public class AssignmentGroup {
-    String id;
-    String name;
+    final String id;
+    final String name;
     Assignments assignments;
-    int drop_lowest;
-    int drop_highest;
+    final int drop_lowest;
+    final int drop_highest;
 
     /**
      * Constructor for the assignment group.
@@ -48,13 +48,15 @@ public class AssignmentGroup {
      * Loads the grades for all the assignments in the assignment group.
      * Returns true on success, otherwise false.
      */
-    public boolean loadGrades() {return assignments.loadGrades();} 
+    public void loadGrades() {
+        assignments.loadGrades();
+    }
         
     /**
      * get the outcome points for the specified student and outcome association.  Apply
      * assignment group rules for this group if they exist.
      * 
-     * @param oa - the outcome association (eg. this group, an assignment, rubric item or question bank) 
+     * @param oa - the outcome association (eg.. this group, an assignment, rubric item or question bank)
      *             to get points for
      * @param student_id - the canvas student id to get the points for
      * @return - the number of points the student scored toward the specific outcome 
@@ -86,7 +88,7 @@ public class AssignmentGroup {
     /**
      * get the maximum outcome points that a student could earn for the specified outcome association.
      * 
-     * @param oa - the outcome association (eg. this group, an assignment, rubric item or question bank) 
+     * @param oa - the outcome association (eg.. this group, an assignment, rubric item or question bank)
      *             to get points for
      * @return - the number of points that could be earned toward the specific outcome 
      *           related to this assignment.
@@ -94,7 +96,7 @@ public class AssignmentGroup {
     public double getMaximumOutcomePoints(OutcomeAssociation oa) {
         double outcome_points = 0;
         
-        // if this evaluation is for a specific assigment, process the assignment
+        // if this evaluation is for a specific assignment, process the assignment
         if (oa.getAssignmentName() != null) {
             return assignments.getAssignmentByName(oa.getAssignmentName()).getMaximumOutcomePoints(oa); 
         }

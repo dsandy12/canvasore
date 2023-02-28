@@ -7,6 +7,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -24,7 +25,7 @@ public class CanvasQuestionGroup {
 	int position;
 	CanvasQuestionBank bank;
     // a map of scores for this group.  The primary key is the student id.  
-    TreeMap<String,Double> student_scores;  
+	final TreeMap<String,Double> student_scores;
     private final LoadingStatus loadingStatus = new LoadingStatus();
 
     /**
@@ -40,20 +41,20 @@ public class CanvasQuestionGroup {
 	        obj = (JsonObject) RequesterSso.apiGetRequest("courses/"+cid+"/quizzes/"+qid+"/groups/"+gid);
 	
 	        // initialize the question bank from the given canvas json object.
-	        name = obj.getValue("name");
-	        id = obj.getValue("id");
-	        quiz_id = obj.getValue("quiz_id");
+	        name = Objects.requireNonNull(obj).getValue("name");
+	        id = Objects.requireNonNull(obj).getValue("id");
+	        quiz_id = Objects.requireNonNull(obj).getValue("quiz_id");
 	        pick_count = obj.getInteger("pick_count");
 	        position = obj.getInteger("position");
 	        question_points = obj.getDouble("question_points");
-	        bank_id = obj.getValue("assessment_question_bank_id");
+	        bank_id = Objects.requireNonNull(obj).getValue("assessment_question_bank_id");
 	        if ((bank_id!=null) && (!bank_id.equalsIgnoreCase("null"))) {
 	        	bank = new CanvasQuestionBank(cid, bank_id);
 	        }
 	    } catch (IOException ex) {
 	        Logger.getLogger("QuestionGroup").log(Level.SEVERE, null, ex);
 	    }
-	    student_scores = new TreeMap<String,Double>();
+	    student_scores = new TreeMap<>();
 	}        
 	
     /**
@@ -108,47 +109,42 @@ public class CanvasQuestionGroup {
     			double step = 1.0/(double)submissions.size();
     			
     		    // loop through each submission
-    			for (CanvasQuizSubmission qsub:submissions) {
+    			for (CanvasQuizSubmission quizSubmission:submissions) {
     		        // ignore submissions that don't match the kept score
-    		        if (qsub.getScore()!=qsub.getKeptScore()) {
+    		        if (quizSubmission.getScore()!=quizSubmission.getKeptScore()) {
     		        	pct = pct+step;
     		        	continue; 
     		        }
     		        
-    	        	synchronized (loadingStatus) {
-    	        		loadingStatus.setChanged(true);
-    	        		loadingStatus.setPercentDone(pct);
-    	        		loadingStatus.setSubOperationDescription("Processing Scores for Submission: " + qsub.getId());
-    	        	}
+    	        	loadingStatus.setStatus(null,"Processing Scores for Submission: " + quizSubmission.getId(),pct);
     	        	pct = pct+step;
     	        	
     	        	// load the questions for this submission
-    		        CanvasQuizQuestions qq = new CanvasQuizQuestions(qsub.getId());
+    		        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+						CanvasQuizQuestions qq = new CanvasQuizQuestions(quizSubmission.getId());
 
     		        // loop for each question
     		        double sum = 0.0;
     		        for (CanvasQuizQuestion q:qq) {
     		        	if (q.getQuizGroupId().equals(id)) {
-    		        		if (q.getCorrect()==null) {
+							//noinspection StatementWithEmptyBody
+							if (q.getCorrect()==null) {
     		        			// assume that the question was not answered
     		        		} else {
     		        			if (q.getCorrect().equalsIgnoreCase("true")) sum = sum + question_points;
     		        		}
     		        	}
     		        }    		
-    		        student_scores.put(qsub.getUserId(),sum);
+    		        student_scores.put(quizSubmission.getUserId(),sum);
     		    }
     	            
-	        	synchronized (loadingStatus) {
-	        		loadingStatus.setChanged(true);
-	        		loadingStatus.setPercentDone(1.0);
-	        	}
+				loadingStatus.setStatus(null, null, 1.0);
     		}
     	}
 		boolean result = true;  
 	    student_scores.clear();
 	    
-    	loadingStatus.setMainOperationDescription("Processing Question Bank: " + name);
+    	loadingStatus.setStatus("Processing Question Bank: " + name,null,-1);
     	ProgressDlg progress = new ProgressDlg(loadingStatus);
     	LoaderThread loader = new LoaderThread();
     	loader.start();

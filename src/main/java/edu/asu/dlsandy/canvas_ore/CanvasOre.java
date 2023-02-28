@@ -10,14 +10,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -37,10 +35,9 @@ public class CanvasOre extends Application {
     
 	/**
 	 * Execute the user workflow to create a new set of outcomes
-	 * 
-	 * @throws IOException
-	 */
-    private void createNewOutcomes() throws IOException {
+	 *
+     */
+    private void createNewOutcomes() {
     	// ask the user to pick the course to create the outcomes for
         CoursePickerForm cpf = new CoursePickerForm();
         CanvasCourse course = cpf.getCourse();
@@ -59,10 +56,9 @@ public class CanvasOre extends Application {
     /**
      * Execute the user workflow to clone an existing set of outcomes
      * to a new course or section.
-     * 
-     * @throws IOException
+     *
      */
-    private void cloneOutcomes() throws IOException {
+    private void cloneOutcomes() {
         // open a file picker to get the outcome file to edit
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Outcome File to Clone");
@@ -105,9 +101,8 @@ public class CanvasOre extends Application {
 
 	/**
 	 * Execute the user workflow to edit a new set of outcomes
-	 * 
-	 * @throws IOException
-	 */
+	 *
+     */
     private void outcomeEdit() {
         // open a file picker to get the outcome file to edit
         FileChooser fileChooser = new FileChooser();
@@ -147,8 +142,7 @@ public class CanvasOre extends Application {
 	 * 
 	 * @param reportByPoints - true if the report generated should use the "sum of points"
 	 *    calculation  method.  Otherwise, use the "average percentage" calculation method.
-	 * @throws IOException
-	 */
+     */
     private void runReport(boolean reportByPoints) {
     	// prompt the user to select an outcome file to report
         FileChooser fileChooser = new FileChooser();
@@ -181,7 +175,7 @@ public class CanvasOre extends Application {
     }
 
     /**
-     * Called automatically by the javaFx framework when the applicatoin is launched.
+     * Called automatically by the javaFx framework when the application is launched.
      * Initialize the main application window and menus.
      *  
      * @param primaryStage - the primary javaFX Stage object for the application
@@ -189,7 +183,7 @@ public class CanvasOre extends Application {
     @Override
     public void start(Stage primaryStage) {
     	// set the application icon
-    	primaryStage.getIcons().add( new Image( CanvasOre.class.getResourceAsStream( "app_icon.png" )));
+    	primaryStage.getIcons().add( new Image(Objects.requireNonNull(CanvasOre.class.getResourceAsStream("app_icon.png"))));
 
     	VBox root = new VBox();
         Scene scene = new Scene(root, 800, 600);
@@ -200,23 +194,9 @@ public class CanvasOre extends Application {
         // --- Menu File
         Menu menuFile = new Menu("File");
         MenuItem fileNew = new MenuItem("New Outcomes...");
-        fileNew.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-                try {
-                    createNewOutcomes();
-                } catch (IOException ex) {
-                    Logger.getLogger(CanvasOre.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });    
+        fileNew.setOnAction(t -> createNewOutcomes());
         MenuItem fileExit = new MenuItem("Exit");
-        fileExit.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-            	Platform.exit();
-            }
-        });    
+        fileExit.setOnAction(t -> Platform.exit());
         menuFile.getItems().addAll(fileNew);
         menuFile.getItems().addAll(fileExit);
         
@@ -224,22 +204,8 @@ public class CanvasOre extends Application {
         Menu menuEdit = new Menu("Edit");
         MenuItem editModify = new MenuItem("Edit Outcomes...");
         MenuItem editApply = new MenuItem("Clone to New Course...");      
-        editModify.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-                outcomeEdit();
-            }
-        });    
-        editApply.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-                try {
-                    cloneOutcomes();
-                } catch (IOException ex) {
-                    Logger.getLogger(CanvasOre.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        });    
+        editModify.setOnAction(t -> outcomeEdit());
+        editApply.setOnAction(t -> cloneOutcomes());
         menuEdit.getItems().addAll(editModify);
         menuEdit.getItems().addAll(editApply);
  
@@ -247,18 +213,8 @@ public class CanvasOre extends Application {
         Menu menuReport = new Menu("Report");
         MenuItem reportAvgPct = new MenuItem("Report by Average Percent...");
         MenuItem reportPoints = new MenuItem("Report by Points...");      
-        reportAvgPct.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-                runReport(false);
-            }
-        });    
-        reportPoints.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent t) {
-                runReport(true);
-            }
-        });    
+        reportAvgPct.setOnAction(t -> runReport(false));
+        reportPoints.setOnAction(t -> runReport(true));
         menuReport.getItems().addAll(reportAvgPct);
         menuReport.getItems().addAll(reportPoints);
 
@@ -277,9 +233,6 @@ public class CanvasOre extends Application {
         // initiate canvas login by reading some dummy data
         try {
 			RequesterSso.httpGetRequest("https://canvas.asu.edu/api/v1/users/self");
-		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

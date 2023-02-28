@@ -18,35 +18,26 @@ public class LoadingStatus {
 	private double percentDone=0.0;
 	private boolean changed = false;
 	
-	public String getMainOperationDescription() {
+	public synchronized void setStatus(String mainOperationDescription, String subOperationDescription, double percentDone) {
+		if (mainOperationDescription!=null) this.mainOperationDescription = mainOperationDescription;
+		if (subOperationDescription!=null) this.subOperationDescription = subOperationDescription;
+		if (percentDone>=0) this.percentDone = percentDone;
+		this.changed = true;
+	}
+
+	public synchronized String getMainOperationDescription() {
 		return mainOperationDescription;
 	}
-	
-	public void setMainOperationDescription(String mainOperationDescription) {
-		this.mainOperationDescription = mainOperationDescription;
-	}
-	
-	public String getSubOperationDescription() {
+
+	public synchronized String getSubOperationDescription() {
 		return subOperationDescription;
 	}
-	
-	public void setSubOperationDescription(String subOperationDescription) {
-		this.subOperationDescription = subOperationDescription;
-	}
-	
-	public double getPercentDone() {
+
+	public synchronized double getPercentDone() {
 		return percentDone;
 	}
-	
-	public void setPercentDone(double percentDone) {
-		this.percentDone = percentDone;
-	}
-	
-	public boolean isChanged() {
+
+	public synchronized boolean isChanged() {
 		return changed;
-	}
-	
-	public void setChanged(boolean changed) {
-		this.changed = changed;
 	}
 }

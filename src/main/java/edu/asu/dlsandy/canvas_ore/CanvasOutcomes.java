@@ -7,7 +7,9 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -15,7 +17,8 @@ import java.util.logging.Logger;
  * represents a list of all outcomes for a course
  */
 public class CanvasOutcomes extends ArrayList<CanvasOutcome> {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 	String course_id;
     String course_name;
     
@@ -33,9 +36,9 @@ public class CanvasOutcomes extends ArrayList<CanvasOutcome> {
             JsonArray outcome_links;
             outcome_links = (JsonArray) RequesterSso.apiGetRequest("courses/"+course_id+"/outcome_group_links?per_page=100");
             if (outcome_links != null) {
-                for (int i=0;i<outcome_links.size();i++) {
-                    JsonObject json_outcome = (JsonObject)RequesterSso.apiGetRequest("outcomes/"+outcome_links.get(i).getValue("outcome.id")+"?per_page=100");
-                    CanvasOutcome outcome = new CanvasOutcome(json_outcome);
+                for (JsonAbstractValue outcome_link : outcome_links) {
+                    JsonObject json_outcome = (JsonObject) RequesterSso.apiGetRequest("outcomes/" + outcome_link.getValue("outcome.id") + "?per_page=100");
+                    CanvasOutcome outcome = new CanvasOutcome(Objects.requireNonNull(json_outcome));
                     add(outcome);
                 }
             }
@@ -56,8 +59,8 @@ public class CanvasOutcomes extends ArrayList<CanvasOutcome> {
 
         JsonArray json_outcomes;
         if ((json_outcomes = (JsonArray)json_obj.get("outcomes"))==null) return;
-        for (int i=0;i<json_outcomes.size();i++) {
-            JsonObject json_outcome = (JsonObject)json_outcomes.get(i);
+        for (JsonAbstractValue jsonOutcome : json_outcomes) {
+            JsonObject json_outcome = (JsonObject) jsonOutcome;
             CanvasOutcome outcome = new CanvasOutcome(json_outcome);
             add(outcome);
         }
@@ -90,12 +93,12 @@ public class CanvasOutcomes extends ArrayList<CanvasOutcome> {
         JsonObject obj = new JsonObject();
         obj.put("course_id",new JsonValue(course_id));
         obj.put("course_name",new JsonValue(course_name));
-        JsonArray arry = new JsonArray();
+        JsonArray array = new JsonArray();
         for (CanvasOutcome outcome:this) {
             JsonObject outcome_obj = outcome.toJson();
-            arry.add(outcome_obj);
+            array.add(outcome_obj);
         }
-        obj.put("outcomes",arry);
+        obj.put("outcomes",array);
         return obj;
     }
 }

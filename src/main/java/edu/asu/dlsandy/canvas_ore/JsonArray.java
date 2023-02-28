@@ -8,13 +8,15 @@ package edu.asu.dlsandy.canvas_ore;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 
 /**
  * A JSON array object.  This is a concrete implementation of the JavaAbstractValue class.
  */
 public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstractValue {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
 	@Override
 	/* 
@@ -23,9 +25,7 @@ public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstr
     public void dump(int indent) {
         for (int i=0;i<indent;i++) System.out.print(" ");
         System.out.println("[");
-        this.forEach((obj) -> {
-            obj.dump(indent+3);
-        });
+        this.forEach((obj) -> obj.dump(indent+3));
         for (int i=0;i<indent;i++) System.out.print(" ");
         System.out.println("]");        
     }
@@ -42,12 +42,12 @@ public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstr
             // The specifier is empty - return values for all records in the
             // object (this should not be normal)
             StringBuilder sb = new StringBuilder();
-            this.forEach((obj) -> {sb.append(obj.getValue(""));});
+            this.forEach((obj) -> sb.append(obj.getValue("")));
             return sb.toString();
         }
         // use the leftmost part of the specifier as the key
         String[] key = specifier.split("[.]",2);
-        int index = Integer.valueOf(key[0]);
+        int index = Integer.parseInt(key[0]);
         if (index<size()) {
             return get(index).getValue(key[1]);
         }
@@ -62,8 +62,8 @@ public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstr
     public boolean getBoolean(String specifier) {
         if (isEmpty()) return false;
         // use the leftmost part of the specifier as the key
-        String[] key = specifier.split(".",2);
-        int index = Integer.valueOf(key[0]);
+        @SuppressWarnings("SuspiciousRegexArgument") String[] key = specifier.split(".",2);
+        int index = Integer.parseInt(key[0]);
         if (index<size()) {
             return get(index).getBoolean(key[1]);
         }
@@ -78,8 +78,8 @@ public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstr
     public String getHandle(String specifier) {
         if (isEmpty()) return "";
         // use the leftmost part of the specifier as the key
-        String[] key = specifier.split(".",2);
-        int index = Integer.valueOf(key[0]);
+        @SuppressWarnings("SuspiciousRegexArgument") String[] key = specifier.split(".",2);
+        int index = Integer.parseInt(key[0]);
         if (index<size()) {
             return get(index).getHandle(key[1]);
         }
@@ -94,8 +94,8 @@ public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstr
     public int getInteger(String specifier) {
         if (isEmpty()) return 0;
         // use the leftmost part of the specifier as the key
-        String[] key = specifier.split(".",2);
-        int index = Integer.valueOf(key[0]);
+        @SuppressWarnings("SuspiciousRegexArgument") String[] key = specifier.split(".",2);
+        int index = Integer.parseInt(key[0]);
         if (index<size()) {
             return get(index).getInteger(key[1]);
         }
@@ -110,8 +110,8 @@ public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstr
     public double getDouble(String specifier) {
         if (isEmpty()) return 0;
         // use the leftmost part of the specifier as the key
-        String[] key = specifier.split(".",2);
-        int index = Integer.valueOf(key[0]);
+        @SuppressWarnings("SuspiciousRegexArgument") String[] key = specifier.split(".",2);
+        int index = Integer.parseInt(key[0]);
         if (index<size()) {
             return get(index).getDouble(key[1]);
         }
@@ -122,7 +122,7 @@ public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstr
     /*
      * write the array to the file specified by the buffered writer
      */
-    public boolean writeToFile(BufferedWriter br) {
+    public void writeToFile(BufferedWriter br) {
         try {
             br.append('[');
             boolean isFirst = true;
@@ -132,9 +132,7 @@ public class JsonArray extends ArrayList<JsonAbstractValue> implements JsonAbstr
                 value.writeToFile(br);
             }
             br.append(']');
-        } catch (IOException ex) {
-            return false;
+        } catch (IOException ignored) {
         }
-        return true;
     }
 }

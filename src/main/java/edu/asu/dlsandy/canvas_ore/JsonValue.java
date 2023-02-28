@@ -18,8 +18,8 @@ public class JsonValue implements JsonAbstractValue {
     private final String value;
 
     @Override
-    /**
-     * diagnostic function to dump the value to the system output device
+    /*
+      diagnostic function to dump the value to the system output device
      */
     public void dump(int indent) {
         for (int i=0;i<indent;i++) System.out.print(" ");
@@ -38,8 +38,8 @@ public class JsonValue implements JsonAbstractValue {
     }
     
     @Override
-    /**
-     * return the value as a string 
+    /*
+      return the value as a string
      */
     public String  getValue(String specifier) {
         if (specifier.isEmpty()) {
@@ -50,23 +50,23 @@ public class JsonValue implements JsonAbstractValue {
     }
     
     @Override
-    /**
-     * return the value as an integer
+    /*
+      return the value as an integer
      */
     public int     getInteger(String specifier) {
         if (specifier.isEmpty()) {
             try {
                 return Integer.parseInt(value); 
             }
-            catch (NumberFormatException e) {
+            catch (NumberFormatException ignored) {
             }
         }
         return 0;
     }
 
     @Override
-    /**
-     * return the value as a double
+    /*
+      return the value as a double
      */
     public double  getDouble(String specifier) {
     	if (specifier.isEmpty()) {
@@ -76,15 +76,15 @@ public class JsonValue implements JsonAbstractValue {
             	}
                 return Double.parseDouble(value);
             }
-            catch (NumberFormatException e) {
+            catch (NumberFormatException ignored) {
             }
         }
         return 0;
     }
     
     @Override
-    /**
-     * return the value as a boolean
+    /*
+      return the value as a boolean
      */
     public boolean getBoolean(String specifier) {
         if (specifier.isEmpty()) {
@@ -94,37 +94,35 @@ public class JsonValue implements JsonAbstractValue {
     }
     
     @Override
-    /**
-     * return as a JSON handle represented as a string
+    /*
+      return as a JSON handle represented as a string
      */
     public String  getHandle(String specifier) {
         return getValue(specifier);
     }
 
     @Override
-    /**
-     * write the JsonValue to the file specified by the BufferedWriter parameter
-     * 
-     * @param br - a buffered writer associated with the output file
+    /*
+      write the JsonValue to the file specified by the BufferedWriter parameter
+
+      @param br - a buffered writer associated with the output file
      * @return true on success, otherwise false
      */
-    public boolean writeToFile(BufferedWriter br) {
+    public void writeToFile(BufferedWriter br) {
         boolean isNumber = false;
         try {
             Double.parseDouble(value);
             isNumber = true;
-        } catch (NumberFormatException nfe) {}    
+        } catch (NumberFormatException ignored) {}
         try {
             Long.parseLong(value);
             isNumber = true;
-        } catch (NumberFormatException nfe) {}    
+        } catch (NumberFormatException ignored) {}
         try {
             if (!isNumber) br.append('"');
             br.append(value);
             if (!isNumber) br.append('"');            
-        } catch (IOException ex) {
-            return false;
+        } catch (IOException ignored) {
         }
-        return true;
     }
 }

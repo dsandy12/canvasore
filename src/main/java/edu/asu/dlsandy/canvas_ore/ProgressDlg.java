@@ -8,8 +8,6 @@ package edu.asu.dlsandy.canvas_ore;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -20,29 +18,29 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.util.Objects;
+
 /**
  * A dialog box that provides a progress bar status display as well as 
  * two levels of text description of the current progress.
  * 
  */
 public class ProgressDlg extends Stage {
-Label statusText1 = new Label("");
-Label statusText2 = new Label("");
-ProgressBar progressBar = new ProgressBar();
-GridPane grid = new GridPane();
-LoadingStatus ls = null;
-Timeline updater = new Timeline(new KeyFrame(Duration.millis(100),new EventHandler<ActionEvent>() {
-    @Override
-    public void handle(ActionEvent event) {
-        synchronized (ls) {
-        	if (ls.isChanged()) {
-        		statusText1.setText(ls.getMainOperationDescription());
-        		statusText2.setText(ls.getSubOperationDescription());
-        		progressBar.setProgress(ls.getPercentDone());
-        		if (ls.getPercentDone()>=1.0) {
-        			close();
-        		}
-        	}
+final Label statusText1 = new Label("");
+final Label statusText2 = new Label("");
+final ProgressBar progressBar = new ProgressBar();
+final GridPane grid = new GridPane();
+@SuppressWarnings("CanBeFinal")
+private LoadingStatus ls;
+
+final Timeline updater = new Timeline(new KeyFrame(Duration.millis(100), event -> {
+    if (ls == null) return;
+    if (this.ls.isChanged()) {
+        statusText1.setText(ls.getMainOperationDescription());
+        statusText2.setText(ls.getSubOperationDescription());
+        progressBar.setProgress(ls.getPercentDone());
+        if (this.ls.getPercentDone() >= 1.0) {
+            close();
         }
     }
 }));
@@ -52,7 +50,7 @@ Timeline updater = new Timeline(new KeyFrame(Duration.millis(100),new EventHandl
  * but don't display the dialog box
  */
 public ProgressDlg(LoadingStatus ls) {
-	this.getIcons().add( new Image( CanvasOre.class.getResourceAsStream( "app_icon.png" )));
+	this.getIcons().add( new Image(Objects.requireNonNull(CanvasOre.class.getResourceAsStream("app_icon.png"))));
 	this.setAlwaysOnTop(true);
 	this.ls = ls;
 	
@@ -76,12 +74,10 @@ public ProgressDlg(LoadingStatus ls) {
     	updater.stop();
     });
 
-    synchronized (ls) {
-		statusText1.setText(ls.getMainOperationDescription());
-		statusText2.setText(ls.getSubOperationDescription());
-		progressBar.setProgress(ls.getPercentDone());
-    }
-    
+    statusText1.setText(ls.getMainOperationDescription());
+    statusText2.setText(ls.getSubOperationDescription());
+    progressBar.setProgress(ls.getPercentDone());
+
     // set the update for the dialog box
     updater.setCycleCount(Timeline.INDEFINITE);
     updater.play();

@@ -8,6 +8,7 @@ package edu.asu.dlsandy.canvas_ore;
 
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -16,7 +17,8 @@ import java.util.logging.Logger;
  * representation of a list of all user groups in a specific course
  */
 public class CanvasUserGroups extends ArrayList<CanvasUserGroup> {
-	private static final long serialVersionUID = 1L;
+	@Serial
+    private static final long serialVersionUID = 1L;
 
 	/**
 	 * constructor - initialize the user groups by querying canvas
@@ -35,10 +37,10 @@ public class CanvasUserGroups extends ArrayList<CanvasUserGroup> {
 	/* 
 	 * helper function to initialize each group based on information from canvas
 	 */
-    private void init(JsonArray arry) {
+    private void init(JsonArray array) {
         try {
-            for (JsonAbstractValue jsonGroup:arry) {
-                // retrieve the users for a the specific group
+            for (JsonAbstractValue jsonGroup:array) {
+                // retrieve the users for a specific group
                 JsonArray members = (JsonArray)RequesterSso.apiGetRequest("groups/"+jsonGroup.getValue("id")+"/users?per_page=100");
                 if (members != null) {
                     CanvasUserGroup group = new CanvasUserGroup();
@@ -56,7 +58,7 @@ public class CanvasUserGroups extends ArrayList<CanvasUserGroup> {
             
     /**
      *  returns the group id associated with a specific user id 
-     *  
+     * <p>
      *  Note: this assumes that there is only one group set within canvas
     */
     public CanvasUserGroup getAssociatedGroup(String userId) {

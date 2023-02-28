@@ -12,12 +12,12 @@ package edu.asu.dlsandy.canvas_ore;
  * submission.  For more information, consult the Canvas LMS API
  */
 public class CanvasQuizSubmission {
-    String  id;            
-    String  quiz_id;
-    String  user_id;
-    int     attempt; 
-    double  score;
-    double  kept_score;
+    final String  id;
+    final String  quiz_id;
+    final String  user_id;
+    final int     attempt;
+    final double  score;
+    final double  kept_score;
 
     /**
      * constructor - initialize the instance from the provided JsonObject

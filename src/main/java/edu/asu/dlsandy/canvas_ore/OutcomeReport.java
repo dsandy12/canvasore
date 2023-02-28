@@ -8,7 +8,6 @@ package edu.asu.dlsandy.canvas_ore;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -16,11 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,10 +34,10 @@ public class OutcomeReport {
     final int STATE_FLUSH_UNUSED_OUTCOMES = 255;
     final int MAX_ASSESSMENT = 6;
     
-    AssignmentGroups assignment_groups;
-    String course_id;
-    CanvasStudentEnrollmentList student_list;
-    CanvasOutcomes outcomes;
+    final AssignmentGroups assignment_groups;
+    final String course_id;
+    final CanvasStudentEnrollmentList student_list;
+    final CanvasOutcomes outcomes;
     TreeMap<String,String> symbolTable;
     
     /*
@@ -176,7 +171,7 @@ public class OutcomeReport {
     private void createReportFromTemplate(String templatename) {
     // test code to try to read/write the output report.
         try {
-            XmlTemplateReader template = new XmlTemplateReader(new InputStreamReader(CanvasOre.class.getResourceAsStream(templatename), StandardCharsets.UTF_8 ));
+            XmlTemplateReader template = new XmlTemplateReader(new InputStreamReader(Objects.requireNonNull(CanvasOre.class.getResourceAsStream(templatename)), StandardCharsets.UTF_8 ));
             
             // get the output file name 
             FileChooser fileChooser = new FileChooser();
@@ -200,46 +195,27 @@ public class OutcomeReport {
             int row_count = 0;
             try {
                 while ((line = template.readLine()) != null) {
-                    if (line.trim().equals("$+O1$-</w:t>")) {
-                        outcome_number = 1;
-                    } else if (line.trim().equals("$+O2$-</w:t>")) {
-                        outcome_number = 2;
-                    } else if (line.trim().equals("$+O3$-</w:t>")) {
-                        outcome_number = 3;
-                    } else if (line.trim().equals("$+O4$-</w:t>")) {
-                        outcome_number = 4;
-                    } else if (line.trim().equals("$+O5$-</w:t>")) {
-                        outcome_number = 5;
-                    } else if (line.trim().equals("$+O6$-</w:t>")) {
-                        outcome_number = 6;
-                    } else if (line.trim().equals("$+O7$-</w:t>")) {
-                        outcome_number = 7;
-                    } else if (line.trim().equals("$+O8$-</w:t>")) {
-                        outcome_number = 8;
-                    } else if (line.trim().equals("$+O9$-</w:t>")) {
-                        outcome_number = 9;
-                    } else if (line.trim().equals("$+O10$-</w:t>")) {
-                        outcome_number = 10;
-                    } else if (line.trim().equals("$+O11$-</w:t>")) {
-                        outcome_number = 11;
-                    } else if (line.trim().equals("$+O12$-</w:t>")) {
-                        outcome_number = 12;
-                    } else if (line.trim().equals("$+O13$-</w:t>")) {
-                        outcome_number = 13;
-                    } else if (line.trim().equals("$+O14$-</w:t>")) {
-                        outcome_number = 14;
-                    } else if (line.trim().equals("$+O15$-</w:t>")) {
-                        outcome_number = 15;
-                    } else if (line.trim().equals("$+O16$-</w:t>")) {
-                        outcome_number = 16;
-                    } else if (line.trim().equals("$+O17$-</w:t>")) {
-                        outcome_number = 17;
-                    } else if (line.trim().equals("$+O18$-</w:t>")) {
-                        outcome_number = 18;
-                    } else if (line.trim().equals("$+O19$-</w:t>")) {
-                        outcome_number = 19;
-                    } else if (line.trim().equals("$+O20$-</w:t>")) {
-                    	outcome_number = 20;
+                    switch (line.trim()) {
+                        case "$+O1$-</w:t>" -> outcome_number = 1;
+                        case "$+O2$-</w:t>" -> outcome_number = 2;
+                        case "$+O3$-</w:t>" -> outcome_number = 3;
+                        case "$+O4$-</w:t>" -> outcome_number = 4;
+                        case "$+O5$-</w:t>" -> outcome_number = 5;
+                        case "$+O6$-</w:t>" -> outcome_number = 6;
+                        case "$+O7$-</w:t>" -> outcome_number = 7;
+                        case "$+O8$-</w:t>" -> outcome_number = 8;
+                        case "$+O9$-</w:t>" -> outcome_number = 9;
+                        case "$+O10$-</w:t>" -> outcome_number = 10;
+                        case "$+O11$-</w:t>" -> outcome_number = 11;
+                        case "$+O12$-</w:t>" -> outcome_number = 12;
+                        case "$+O13$-</w:t>" -> outcome_number = 13;
+                        case "$+O14$-</w:t>" -> outcome_number = 14;
+                        case "$+O15$-</w:t>" -> outcome_number = 15;
+                        case "$+O16$-</w:t>" -> outcome_number = 16;
+                        case "$+O17$-</w:t>" -> outcome_number = 17;
+                        case "$+O18$-</w:t>" -> outcome_number = 18;
+                        case "$+O19$-</w:t>" -> outcome_number = 19;
+                        case "$+O20$-</w:t>" -> outcome_number = 20;
                     }
                     switch (state) {
                         case STATE_PARSE_NORMAL:
@@ -298,13 +274,13 @@ public class OutcomeReport {
                             }
                             if (line.trim().equals("</w:tc>")) {
                                 // this is the final specifier for a table column.
-                                // column 0 = the student id column
-                                // column 1 = the first assessment column
-                                // column 2 = the second assessment column
+                                // column 0 = the student id column.
+                                // column 1 = the first assessment column.
+                                // column 2 = the second assessment column.
                                 // ...
                                 if (column_count == MAX_ASSESSMENT) {
                                     column_count = -5;
-                                    state = STATE_PARSE_SCORE_TABLE;
+                                    // state = STATE_PARSE_SCORE_TABLE;
                                 } else if (column_count >= outcomes.get(outcome_number-1).getAssociations().size()) {
                                     state = STATE_FLUSH_UNUSED_COLUMNS;
                                 } 
@@ -314,7 +290,7 @@ public class OutcomeReport {
                             break;
                         case STATE_FLUSH_UNUSED_COLUMNS:
                             if (line.trim().equals("</w:tc>")) {
-                                // this is the final specifier for an column.
+                                // this is the final specifier for a column.
                                 if (column_count == MAX_ASSESSMENT) {
                                     // if we have reached the last assessment, go back to
                                     // normal processing mode
@@ -345,8 +321,7 @@ public class OutcomeReport {
                         for(Map.Entry<String,String> entry : symbolTable.entrySet()) {
                             String key = entry.getKey();
                             String value = entry.getValue();
-                            String replaceString = line.replace(key, value);
-                            line = replaceString;
+                            line = line.replace(key, value);
                             if (!line.contains("$+")) break;
                         }
                     }
@@ -357,10 +332,8 @@ public class OutcomeReport {
             }
             outfile.close();
             template.close();
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(OutcomeReport.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(OutcomeReport.class.getName()).log(Level.SEVERE, null, ex);                
+            Logger.getLogger(OutcomeReport.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -392,9 +365,9 @@ public class OutcomeReport {
         
         // create the report;
         if (reportByPoints) {
-            createReportFromTemplate("/Outcomes By Points.xml");
+            createReportFromTemplate("Outcomes By Points.xml");
         } else {
-            createReportFromTemplate("/Outcomes By Percent.xml");
+            createReportFromTemplate("Outcomes By Percent.xml");
         }
     }
 }
