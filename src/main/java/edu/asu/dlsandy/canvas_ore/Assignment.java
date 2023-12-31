@@ -149,17 +149,21 @@ public class Assignment {
     	                if (team!=null) {
     	                    grades.put(submission.getUserId(), submission.getScore());                    
     	                    rubric.setRubricScores(submission.getUserId(),submission.getRubricScores());
+
+                            // set the rubric ratings for KPIs.
+                            rubric.setRubricRatings(submission.getUserId(),submission.getRubricRatingIds());
     	                }
     	            } else {
     	                // otherwise, add a grade item for this student alone
     	                grades.put(submission.getUserId(), submission.getScore());                    
     	                rubric.setRubricScores(submission.getUserId(),submission.getRubricScores());
+
+                        // set the rubric ratings for KPIs.
+                        rubric.setRubricRatings(submission.getUserId(),submission.getRubricRatingIds());
     	            }
     	        }
     	            
-	        	synchronized (loadingStatus) {
-	        		loadingStatus.setStatus(null,null,1.0);
-	        	}
+                loadingStatus.setStatus(null,null,1.0);
     		}
     	}
     	boolean result = true;
@@ -174,12 +178,10 @@ public class Assignment {
   
     	// if the dialog box is closed before loading completes, stop the
     	// loader thread
-    	synchronized(loadingStatus) {
-    		if (loadingStatus.getPercentDone()<1.0) {
-    			loader.interrupt();
-    		}
-    	}
-    	
+        if (loadingStatus.getPercentDone()<1.0) {
+            loader.interrupt();
+        }
+
     	// if the assignment is a quiz, load the question bank specific scores
         if (is_quiz) quiz.loadGrades(course_id);
 
@@ -218,6 +220,31 @@ public class Assignment {
         	  return quiz.getQuestionGroups().getStudentOutcomePoints(oa,student_id);
           }
           return 0.0;
+    }
+
+    /**
+     * get the student kpi attainment for the specified student and outcome association.
+     *
+     * @param oa - the outcome association (eg. assignment, rubric item or question bank)
+     *             to get points for
+     * @param student_id - the canvas student id to get the points for
+     * @return - the outcome attainment for the specific association.
+     */
+    public String getStudentKpiAttainment(OutcomeAssociation oa, String student_id) {
+        // return if student did not submit an assignment
+        if (!grades.containsKey(student_id)) return "X";
+
+        // if this evaluation is for this assignment - specify unknown - this will force scores to be used
+        if ((oa==null)||((oa.getRubricCriterion() == null) && (oa.getQuestionGroup() == null))) {
+            return "unknown";
+        }
+
+        if (oa.getRubricCriterion() != null) {
+            // this is related to a rubric criterion
+            return rubric.getStudentOutcomeKpiAttainment(oa.getRubricCriterion(),student_id);
+        }
+
+        return "unknown";
     }
 
     /**

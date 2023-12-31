@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class AssignmentGroups extends ArrayList<AssignmentGroup> {
 	@Serial
     private static final long serialVersionUID = 1L;
-
+    private static final double attainmentThreshold = 0.70;
     /**
      * Constructor for the assignment groups.  Reads the information from Canvas
      * @param course_id - The Canvas LMS course ID to read the assignment groups from
@@ -101,6 +101,82 @@ public class AssignmentGroups extends ArrayList<AssignmentGroup> {
         if (max_points == 0) return 0;
         // return student points divided by the maximum points
         return assignmentGroup.getStudentOutcomePoints(oa,student_id)/max_points;
+    }
+
+    /**
+     * return a list of assignment scores for each of the assignments in the group.
+     *
+     * @param outcome - the outcome to be evaluated to get points for
+     * @param student_id - the canvas student id to get the points for
+     * @return - a list of the percentages attained for each of the assignments in the outcome.
+     */
+    public ArrayList<Double> getStudentAssignmentPercentages(CanvasOutcome outcome, String student_id) {
+        ArrayList<Double> result = new ArrayList<>();
+        for (AssignmentGroup assignment_group:this) {
+            for (OutcomeAssociation association:outcome.getAssociations()) {
+                if (assignment_group.getName().equals(association.getAssignmentGroupName())) {
+                    // here the outcome assignment group matches the current assignment group
+                    double outcome_points = assignment_group.getStudentOutcomePoints(association,student_id);
+                    double max_points =  assignment_group.getMaximumOutcomePoints(association);
+
+                    // check for missing assignments
+                    if (Double.isNaN(outcome_points)) {
+                        result.add(outcome_points);
+                    } else {
+                        result.add(outcome_points / max_points);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * get the assignment kpi rating for the specified student and outcome association.
+     *
+     * @param oa - the outcome association (eg. group, assignment, rubric item or question bank)
+     *             to get points for
+     * @param student_id - the canvas student id to get the points for
+     * @return - the kpi rating for the assingment: "E" - exceeds, "M" - meets, "I" - insufficient, "X" - not attempted
+     */
+    public String getStudentAssignmentKpiAttainment(OutcomeAssociation oa, String student_id) {
+        AssignmentGroup assignmentGroup = getFromName(oa.getAssignmentGroupName());
+        if (assignmentGroup == null) return "X";
+
+        // get the kpi attainment level
+        String attainment = assignmentGroup.getStudentOutcomeKpiAttainment(oa,student_id);
+        if (!attainment.equals("unknown")) return attainment;
+
+        // calculate the attainment by percentage
+        double percent = getStudentAssignmentPercent(oa,student_id);
+        if (percent>=.90) return "E";
+        if (percent>=.70) return "M";
+        return "I";
+    }
+
+    /**
+     * return the status of student outcome attainment based on the related KPI performance
+     *
+     * @param outcome - the outcome to be evaluated
+     * @param student_id - the canvas student id to get the points for
+     * @return - "Attained", "Not Attained", "-".
+     */
+    public String getStudentKPIAttainment(CanvasOutcome outcome, String student_id) {
+        for (AssignmentGroup assignment_group:this) {
+            for (OutcomeAssociation association:outcome.getAssociations()) {
+                if (assignment_group.getName().equals(association.getAssignmentGroupName())) {
+                    // here the outcome assignment group matches the current assignment group
+                    String attainment = getStudentAssignmentKpiAttainment(association,student_id);
+
+                    // check for missing assignments
+                    if (attainment.equals("X")) return "-";
+
+                    // check for non-attainment
+                    if (attainment.equals("I")) return "Not Attained";
+                }
+            }
+        }
+        return "Attained";
     }
 
     /**

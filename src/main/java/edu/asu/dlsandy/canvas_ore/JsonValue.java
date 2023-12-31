@@ -66,13 +66,14 @@ public class JsonValue implements JsonAbstractValue {
 
     @Override
     /*
-      return the value as a double
+      return the value as a double.  If there is no value to return,
+      return the double value encoding for NaN (not a number)
      */
     public double  getDouble(String specifier) {
     	if (specifier.isEmpty()) {
             try {
             	if (value==null) {
-            		return 0.0;
+            		return Double.NaN;
             	}
                 return Double.parseDouble(value);
             }

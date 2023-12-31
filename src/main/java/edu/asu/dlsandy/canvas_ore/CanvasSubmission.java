@@ -14,15 +14,17 @@ import java.util.TreeMap;
  */
 public class CanvasSubmission {
     final String  id;
-    double  score;         
+    double  score;
     final String  user_id;
     boolean grade_matches; 
     double  entered_score; 
     final boolean late;
     final int     attempt;
-    // This tree map has the rubric id as the key  
+    // This tree map has the rubric row id as the key and the user score for the value
     final TreeMap<String, Double> rubric_scores;
 
+    // This tree map holds the rubric rating IDs associated with each rubric row
+    final TreeMap<String, String> rubric_rating_ids;
     /**
      * Constructor - initialize the instance from information contained in the 
      *               specified JsonObject.
@@ -30,6 +32,7 @@ public class CanvasSubmission {
      */
     CanvasSubmission(JsonObject obj) {
         id = obj.getValue("id");
+
         score = obj.getDouble("score");
         user_id = obj.getValue("user_id");
         attempt = obj.getInteger("attempt");
@@ -39,6 +42,8 @@ public class CanvasSubmission {
         }
         entered_score = score;
         rubric_scores = new TreeMap<>();
+        rubric_rating_ids = new TreeMap<>();
+
         if (obj.containsKey("entered_score"))
         {
             // this line takes care of grade overrides
@@ -56,7 +61,8 @@ public class CanvasSubmission {
                JsonObject rubric_obj = (JsonObject)entry.getValue();
                if (rubric_obj==null) continue;
                rubric_scores.put(criterion_id, rubric_obj.getDouble("points"));
-            }            
+               rubric_rating_ids.put(criterion_id, rubric_obj.getValue("rating_id"));
+            }
         }
     }
     
@@ -91,8 +97,15 @@ public class CanvasSubmission {
     public int getAttempt() {return attempt;}
 
     /**
-     * returns the rubric scores for this assignment.  Each key represents the rubric row
-     * id and the value represents the points earned for that row.
+     * returns the rubric scores for this assignment.  Each key represents the rubric criteria
+     * (row) id and the value represents the points earned for that row.
      */
-    public TreeMap<String,Double> getRubricScores() {return rubric_scores;}    
+    public TreeMap<String,Double> getRubricScores() {return rubric_scores;}
+
+    /**
+     * returns the rubric ratings for this assignment.  Each key represents the rubric criteria
+     * (row) id and the value represents the id of the rating that was selected for that row.
+     */
+    public TreeMap<String,String> getRubricRatingIds() {return rubric_rating_ids;}
+
 }

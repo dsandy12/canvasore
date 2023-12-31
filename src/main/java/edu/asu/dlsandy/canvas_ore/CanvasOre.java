@@ -140,10 +140,15 @@ public class CanvasOre extends Application {
 	/**
 	 * Execute the user workflow to edit a new set of outcomes
 	 * 
-	 * @param reportByPoints - true if the report generated should use the "sum of points"
-	 *    calculation  method.  Otherwise, use the "average percentage" calculation method.
+	 * @param reportType - "points" if the report generated should use the "sum of points"
+	 *    calculation  method.  "percent" to use the "average percentage" calculation method.
+     *    "kpi" to generate a report by key performance indicators.
      */
-    private void runReport(boolean reportByPoints) {
+    private void runReport(String reportType) {
+        if ((!reportType.equals("percent"))&&(!reportType.equals("points"))&&(!reportType.equals("kpi"))) {
+            return;
+        }
+
     	// prompt the user to select an outcome file to report
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select Outcome File to Use");
@@ -171,7 +176,7 @@ public class CanvasOre extends Application {
         CanvasOutcomes outcomes = new CanvasOutcomes((JsonObject)outcomes_json);
 
         // create and save the new report
-        new OutcomeReport(outcomes, reportByPoints);
+        new OutcomeReport(outcomes, reportType);
     }
 
     /**
@@ -212,11 +217,14 @@ public class CanvasOre extends Application {
         // --- Menu Report
         Menu menuReport = new Menu("Report");
         MenuItem reportAvgPct = new MenuItem("Report by Average Percent...");
-        MenuItem reportPoints = new MenuItem("Report by Points...");      
-        reportAvgPct.setOnAction(t -> runReport(false));
-        reportPoints.setOnAction(t -> runReport(true));
+        MenuItem reportPoints = new MenuItem("Report by Points...");
+        MenuItem reportKPI = new MenuItem("Report by Key Performance Indicators...");
+        reportAvgPct.setOnAction(t -> runReport("percent"));
+        reportPoints.setOnAction(t -> runReport("points"));
+        reportKPI.setOnAction(t -> runReport("kpi"));
         menuReport.getItems().addAll(reportAvgPct);
         menuReport.getItems().addAll(reportPoints);
+        menuReport.getItems().addAll(reportKPI);
 
         // --- Menu Help
         Menu menuHelp = new Menu("Help");

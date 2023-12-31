@@ -21,8 +21,12 @@ public class CanvasRubric {
     // a map of maps.  The first key is the student id.  The second key
     // is the rubric criteria.  There should be no duplicate grades for a specific
     // criteria, so this should work fine.
-    TreeMap<String,TreeMap<String,Double>> student_scores;  
-    
+    TreeMap<String,TreeMap<String,Double>> student_scores;
+
+    // a map of maps.  The first key is the student id.  The second key
+    // is the rubric criteria.  There should be no duplicate grades for a specific
+    // criteria, so this should work fine.
+    TreeMap<String,TreeMap<String,String>> student_kpi_ratings;
     /**
      * Representation of a single row in a canvas rubric.  This contains an ordered
      * set of ratings where the rubric ratings that are worth the most points come 
@@ -103,6 +107,8 @@ public class CanvasRubric {
         final String id;
         final String description;
         final String long_description;
+
+        String competency_level;
         
         /**
          * constructor - initialize from the provided JsonObject
@@ -112,6 +118,51 @@ public class CanvasRubric {
             id     = obj.getValue("id");
             description = obj.getValue("description");
             long_description = obj.getValue("long_description");
+
+            // attempt to assign the competency level for this rubric item based on
+            // the information coded in the description field.
+            // first, take care of default values based on the name of the field
+            competency_level = "unknown";
+            switch(description.toLowerCase()) {
+                case ("full marks"):
+                case ("full credit"):
+                case ("proficient"):
+                    competency_level = "E";
+                    break;
+                case ("partial marks"):
+                case ("partial credit"):
+                case ("competent"):
+                case ("commpetent"):
+                    competency_level = "M";
+                    break;
+                case ("no marks"):
+                case ("minimal marks"):
+                case ("minimal credit"):
+                case ("insufficient"):
+                case ("not proficient"):
+                case ("novice"):
+                    competency_level = "I";
+                    break;
+                case ("missing"):
+                case ("not attempted"):
+                    competency_level = "X";
+                    break;
+            }
+            // now look for hashtags in the long description - these will override the
+            // rating name if the hashtag exists
+            if (long_description.toLowerCase().contains("#exceeds_competency")) {
+                competency_level = "E";
+            } else if (long_description.toLowerCase().contains("#meets_competency")) {
+                competency_level = "M";
+            } else if (long_description.toLowerCase().contains("#insufficient_competency")) {
+                competency_level = "I";
+            } else if (long_description.toLowerCase().contains("#not_attempted")) {
+                competency_level = "X";
+            }
+
+                if (competency_level == "unknown") {
+                System.out.println(description);
+            }
         }
         
         /**
@@ -133,8 +184,13 @@ public class CanvasRubric {
          * returns the long description for this rubric cell
          */
         public String getLongDescription() {return long_description;}
+
+        /**
+         * returns the competency level for the rubric cell
+         */
+        public String getCompetencyLevel() {return competency_level;}
     }
-    
+
     /**
      * constructor - initialize the rubric instance from information in the provided 
      *               JsonArray.
@@ -148,7 +204,8 @@ public class CanvasRubric {
             rows.add(rr);
         }
         student_scores = new TreeMap<>();
-    }    
+        student_kpi_ratings = new TreeMap<>();
+    }
     
     /**
      * return the rubric cell for the specified position in the rubric
@@ -208,6 +265,34 @@ public class CanvasRubric {
     }
 
     /**
+     * set the user rubric-based kpi rating for each rubric row based on information provided
+     * @param user - the user to set the scores for
+     * @param ratings - a map that contains the rubric row ID as the primary key
+     *               and the id for the rubric rating as the value
+     */
+    public void setRubricRatings(String user, TreeMap<String,String> ratings) {
+        // loop for each entry in the map
+        for(Map.Entry<String,String> entry : ratings.entrySet()) {
+            String rubric_row_id = entry.getKey();
+            String rubric_row_rating_id = entry.getValue();
+
+            // if the student scores map does not yet have an entry for this user, create it
+            if (!student_kpi_ratings.containsKey(user)) {
+                student_kpi_ratings.put(user, new TreeMap<>());
+            }
+            // search the rubric for the associated rating within this rubric
+            for (RubricRow row : rows) {
+                if (!row.getId().equals(rubric_row_id)) continue;
+                for (RubricCell rating: row) {
+                    if (rating.getId().equals(rubric_row_rating_id)) {
+                        student_kpi_ratings.get(user).put(rubric_row_id, rating.getCompetencyLevel());
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * returns the total number of points the specified user earned from the rubric.
      * This method assumes that the user scores have already been set using
      * SetRubricScores()
@@ -249,6 +334,19 @@ public class CanvasRubric {
         if (criterion== null) return 0;
         if (!student_scores.containsKey(user_id)) return 0;
         return student_scores.get(user_id).get(criterion);
+    }
+
+    /**
+     * return the student kpi attainment for the rubric row with the specified name
+     * @param rubric_row_name - the name of the rubric row
+     * @param user_id - the canvas student id
+     * @return the points the student earned
+     */
+    public String getStudentOutcomeKpiAttainment(String rubric_row_name, String user_id) {
+        String criterion = getCriterionIdFromName(rubric_row_name);
+        if (criterion== null) return "X";
+        if (!student_kpi_ratings.containsKey(user_id)) return "X";
+        return student_kpi_ratings.get(user_id).get(criterion);
     }
 
     /**

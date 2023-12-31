@@ -51,7 +51,26 @@ public class AssignmentGroup {
     public void loadGrades() {
         assignments.loadGrades();
     }
-        
+
+    /**
+     * get the kpi attainment for the specified student and outcome association.  Apply
+     * assignment group rules for this group if they exist.
+     *
+     * @param oa - the outcome association (eg.. this group, an assignment, rubric item or question bank)
+     *             to get points for
+     * @param student_id - the canvas student id to get the points for
+     * @return - the kpi attainment the student scored toward the specific outcome
+     *           related to this assignment group.
+     */
+    public String getStudentOutcomeKpiAttainment(OutcomeAssociation oa, String student_id) {
+        // if this evaluation is for a specific assignment, process the assignment
+        if (oa.getAssignmentName() != null) {
+            return assignments.getAssignmentByName(oa.getAssignmentName()).getStudentKpiAttainment(oa, student_id);
+        }
+
+        return "unknown";
+    }
+
     /**
      * get the outcome points for the specified student and outcome association.  Apply
      * assignment group rules for this group if they exist.
