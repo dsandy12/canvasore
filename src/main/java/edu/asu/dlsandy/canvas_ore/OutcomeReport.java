@@ -37,7 +37,7 @@ public class OutcomeReport {
     
     final AssignmentGroups assignment_groups;
     final String course_id;
-    final CanvasStudentEnrollmentList student_list;
+    final ArrayList<String> student_list;
     final CanvasOutcomes outcomes;
     TreeMap<String,String> symbolTable;
     
@@ -461,7 +461,11 @@ public class OutcomeReport {
         course_id = outcomes.getCourseId();
         
         // load the student list
-        student_list = new CanvasStudentEnrollmentList(course_id);
+        //student_list = new CanvasStudentEnrollmentList(course_id);
+
+        // remove students who are not part of the major //
+        StudentSelectorDlg selectorDlg = new StudentSelectorDlg(course_id);
+        student_list = selectorDlg.getEnrollmentList();
 
         // load the course assignment groups
         assignment_groups = new AssignmentGroups(course_id);
