@@ -37,7 +37,7 @@ public class OutcomeReport {
     
     final AssignmentGroups assignment_groups;
     final String course_id;
-    final CanvasStudentEnrollmentList student_list;
+    final ArrayList<String> student_list;
     final CanvasOutcomes outcomes;
     TreeMap<String,String> symbolTable;
     
@@ -173,12 +173,8 @@ public class OutcomeReport {
                     symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".ATTAINED$-", student_attainment_kpi);
 
                     switch (student_attainment_kpi) {
-                        case "Attained":
-                            total_attained_kpi++;
-                            break;
-                        case "Not Attained":
-                            total_not_attained_kpi++;
-                            break;
+                        case "Attained" -> total_attained_kpi++;
+                        case "Not Attained" -> total_not_attained_kpi++;
                     }
 
                     // update class percent attainment statistics for this outcome
@@ -209,17 +205,19 @@ public class OutcomeReport {
                 int insufficient_count = 0;
                 for (String student_id : student_list) {
                     String attainment = assignment_groups.getStudentAssignmentKpiAttainment(association,student_id);
-                    if (attainment.equals("E")) {
-                        total_count++;
-                        exceeds_count++;
-                    }
-                    else if (attainment.equals("M")) {
-                        total_count++;
-                        meets_count++;
-                    }
-                    else if (attainment.equals("I")) {
-                        total_count++;
-                        insufficient_count++;
+                    switch (attainment) {
+                        case "E" -> {
+                            total_count++;
+                            exceeds_count++;
+                        }
+                        case "M" -> {
+                            total_count++;
+                            meets_count++;
+                        }
+                        case "I" -> {
+                            total_count++;
+                            insufficient_count++;
+                        }
                     }
                 }
                 // create the kpi statistics for this assignment/kpi
@@ -461,7 +459,11 @@ public class OutcomeReport {
         course_id = outcomes.getCourseId();
         
         // load the student list
-        student_list = new CanvasStudentEnrollmentList(course_id);
+        //student_list = new CanvasStudentEnrollmentList(course_id);
+
+        // remove students who are not part of the major //
+        StudentSelectorDlg selectorDlg = new StudentSelectorDlg(course_id);
+        student_list = selectorDlg.getEnrollmentList();
 
         // load the course assignment groups
         assignment_groups = new AssignmentGroups(course_id);
@@ -474,15 +476,9 @@ public class OutcomeReport {
         
         // create the report;
         switch (reportType) {
-            case "points":
-                createReportFromTemplate("Outcomes By Points.xml");
-                break;
-            case "percent":
-                createReportFromTemplate("Outcomes By Percent.xml");
-                break;
-            case "kpi":
-                createReportFromTemplate("Outcomes By KPI.xml");
-                break;
+            case "points" -> createReportFromTemplate("Outcomes By Points.xml");
+            case "percent" -> createReportFromTemplate("Outcomes By Percent.xml");
+            case "kpi" -> createReportFromTemplate("Outcomes By KPI.xml");
         }
     }
 }
