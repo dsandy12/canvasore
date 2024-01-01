@@ -10,19 +10,18 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -37,7 +36,7 @@ public class StudentSelectorDlg extends Stage {
     boolean exitOkay;
 
     // an internal class representation used by the table in this dialog box
-    public class StudentTableData {
+    public static class StudentTableData {
         private final SimpleStringProperty userId;
         private final SimpleStringProperty userName;
         private CheckBox include;
@@ -73,7 +72,7 @@ public class StudentSelectorDlg extends Stage {
         }
     }
 
-    public class EnrollmentList extends ArrayList<StudentTableData> {
+    public static class EnrollmentList extends ArrayList<StudentTableData> {
         @Serial
         private static final long serialVersionUID = 1L;
 
@@ -101,6 +100,7 @@ public class StudentSelectorDlg extends Stage {
         }
     }
 
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     final private EnrollmentList enrollmentList;
 
     /**
@@ -125,7 +125,7 @@ public class StudentSelectorDlg extends Stage {
         enrollmentList = new EnrollmentList(course_id);
 
         // create the table view of students
-        TableView tableView = new TableView();
+        TableView<StudentTableData> tableView = new TableView<>();
         tableView.setEditable(false);
         TableColumn<StudentTableData, String> column1 = new TableColumn<>();
         column1.setText("Student Name");

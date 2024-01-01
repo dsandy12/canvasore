@@ -137,7 +137,7 @@ public class AssignmentGroups extends ArrayList<AssignmentGroup> {
      * @param oa - the outcome association (eg. group, assignment, rubric item or question bank)
      *             to get points for
      * @param student_id - the canvas student id to get the points for
-     * @return - the kpi rating for the assingment: "E" - exceeds, "M" - meets, "I" - insufficient, "X" - not attempted
+     * @return - the kpi rating for the assignment: "E" - exceeds, "M" - meets, "I" - insufficient, "X" - not attempted
      */
     public String getStudentAssignmentKpiAttainment(OutcomeAssociation oa, String student_id) {
         AssignmentGroup assignmentGroup = getFromName(oa.getAssignmentGroupName());

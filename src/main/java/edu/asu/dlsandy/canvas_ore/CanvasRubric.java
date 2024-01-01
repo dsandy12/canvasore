@@ -123,30 +123,12 @@ public class CanvasRubric {
             // the information coded in the description field.
             // first, take care of default values based on the name of the field
             competency_level = "unknown";
-            switch(description.toLowerCase()) {
-                case ("full marks"):
-                case ("full credit"):
-                case ("proficient"):
-                    competency_level = "E";
-                    break;
-                case ("partial marks"):
-                case ("partial credit"):
-                case ("competent"):
-                case ("commpetent"):
-                    competency_level = "M";
-                    break;
-                case ("no marks"):
-                case ("minimal marks"):
-                case ("minimal credit"):
-                case ("insufficient"):
-                case ("not proficient"):
-                case ("novice"):
-                    competency_level = "I";
-                    break;
-                case ("missing"):
-                case ("not attempted"):
-                    competency_level = "X";
-                    break;
+            switch (description.toLowerCase()) {
+                case ("full marks"), ("full credit"), ("proficient") -> competency_level = "E";
+                case ("partial marks"), ("partial credit"), ("competent"), ("commpetent") -> competency_level = "M";
+                case ("no marks"), ("minimal marks"), ("minimal credit"), ("insufficient"), ("not proficient"), ("novice") ->
+                        competency_level = "I";
+                case ("missing"), ("not attempted") -> competency_level = "X";
             }
             // now look for hashtags in the long description - these will override the
             // rating name if the hashtag exists
@@ -160,7 +142,7 @@ public class CanvasRubric {
                 competency_level = "X";
             }
 
-                if (competency_level == "unknown") {
+                if (competency_level.equals("unknown")) {
                 System.out.println(description);
             }
         }

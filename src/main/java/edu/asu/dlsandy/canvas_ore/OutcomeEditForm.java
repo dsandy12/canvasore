@@ -218,7 +218,7 @@ public class OutcomeEditForm extends Stage {
                 // that are invalid - show an error dialog box.
                 Alert alert = new Alert(AlertType.WARNING);
                 alert.setTitle("Invalid Outcome Specification");
-                alert.setHeaderText("Outccome is linked to invalid assignments");
+                alert.setHeaderText("Outcome is linked to invalid assignments");
                 alert.setContentText("Please remove the invalid assignment links (shown with warning icon) and try again.");
                 alert.showAndWait();
                 return;
