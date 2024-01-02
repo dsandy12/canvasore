@@ -53,25 +53,6 @@ public class AssignmentGroup {
     }
 
     /**
-     * get the kpi attainment for the specified student and outcome association.  Apply
-     * assignment group rules for this group if they exist.
-     *
-     * @param oa - the outcome association (eg.. this group, an assignment, rubric item or question bank)
-     *             to get points for
-     * @param student_id - the canvas student id to get the points for
-     * @return - the kpi attainment the student scored toward the specific outcome
-     *           related to this assignment group.
-     */
-    public String getStudentOutcomeKpiAttainment(OutcomeAssociation oa, String student_id) {
-        // if this evaluation is for a specific assignment, process the assignment
-        if (oa.getAssignmentName() != null) {
-            return assignments.getAssignmentByName(oa.getAssignmentName()).getStudentKpiAttainment(oa, student_id);
-        }
-
-        return "unknown";
-    }
-
-    /**
      * get the outcome points for the specified student and outcome association.  Apply
      * assignment group rules for this group if they exist.
      * 
@@ -82,8 +63,10 @@ public class AssignmentGroup {
      *           related to this assignment group.
      */
     public double getStudentOutcomePoints(OutcomeAssociation oa, String student_id) {
-        double outcome_points = 0;
-        
+        double outcome_points_max = 0.0;
+        double outcome_points_min = 0.0;
+        double max_possible_points = getMaximumOutcomePoints(oa);
+
         // if this evaluation is for a specific assignment, process the assignment
         if (oa.getAssignmentName() != null) {
             return assignments.getAssignmentByName(oa.getAssignmentName()).getStudentOutcomePoints(oa, student_id); 
@@ -91,17 +74,50 @@ public class AssignmentGroup {
         
         // otherwise, return the points for this assignment group, applying any rules that have
         // been specified.
-        ArrayList<Double> results = new ArrayList<>();
+        // Note that if the student did not submit one or more assignments, in the group, then the determination
+        // of the grade for the group will be determined by:
+        // Assume the unsubmitted assignments are worth 0 points - if after applying rules, the result is >= 70 %
+        //      return the result
+        // Assume the unsubmitted assignments are worth 100 points - if after applying the rules, the result is <70%
+        //      return the result as calculated using unsubmitted assignments worth 0;
+        // Otherwise, return Nan -> result cannot be determined
+        ArrayList<Double> results_min = new ArrayList<>();
+        ArrayList<Double> results_max = new ArrayList<>();
+        double unknownPointsMax = 0;
         for (Assignment assignment:assignments) {
-            results.add(assignment.getStudentOutcomePoints(null,student_id));
+            double assignmentResult = assignment.getStudentOutcomePoints(null,student_id);
+            if (Double.isNaN(assignmentResult)) {
+                results_min.add(0.0);
+                results_max.add(assignment.getPointsPossible());
+            } else {
+                results_min.add(assignment.getStudentOutcomePoints(null, student_id));
+                results_max.add(assignment.getStudentOutcomePoints(null, student_id));
+            }
         }
-        results.sort(null);
+        results_min.sort(null);
+        results_max.sort(null);
         int i = 0;
-        for (Double d:results) {
-            if ((i>=drop_lowest)&&(i<results.size()-drop_highest)) outcome_points+=d;
+        for (Double d:results_min) {
+            if ((i>=drop_lowest)&&(i<results_min.size()-drop_highest)) {
+                outcome_points_min += d;
+            }
             i++;
         }
-        return outcome_points;
+        i = 0;
+        for (Double d:results_max) {
+            if ((i>=drop_lowest)&&(i<results_min.size()-drop_highest)) {
+                outcome_points_max+=d;
+            }
+            i++;
+        }
+        // student demonstrated competency even with missing assignments
+        if (outcome_points_min/max_possible_points >= 0.70) return outcome_points_min;
+
+        // student could not demonstrate competency even if all remaining assignments were 100%
+        if (outcome_points_max/max_possible_points < 0.70)  return outcome_points_min;
+
+        // the result is indeterminate - student did not turn in enough assignments
+        return Double.NaN;
     }
 
     /**

@@ -149,17 +149,11 @@ public class Assignment {
     	                if (team!=null) {
     	                    grades.put(submission.getUserId(), submission.getScore());                    
     	                    rubric.setRubricScores(submission.getUserId(),submission.getRubricScores());
-
-                            // set the rubric ratings for KPIs.
-                            rubric.setRubricRatings(submission.getUserId(),submission.getRubricRatingIds());
     	                }
     	            } else {
     	                // otherwise, add a grade item for this student alone
     	                grades.put(submission.getUserId(), submission.getScore());                    
     	                rubric.setRubricScores(submission.getUserId(),submission.getRubricScores());
-
-                        // set the rubric ratings for KPIs.
-                        rubric.setRubricRatings(submission.getUserId(),submission.getRubricRatingIds());
     	            }
     	        }
     	            
@@ -198,7 +192,7 @@ public class Assignment {
      */
     public double getStudentOutcomePoints(OutcomeAssociation oa, String student_id) {
         // return if student did not submit an assignment
-        if (!grades.containsKey(student_id)) return 0;
+        if (!grades.containsKey(student_id)) return Double.NaN;
 
         // if this evaluation is for this assignment, process the assignment
         if ((oa==null)||((oa.getRubricCriterion() == null) && (oa.getQuestionGroup() == null))) {
@@ -212,39 +206,16 @@ public class Assignment {
 	        // case occurs for group assignments where a student has been assigned a
 	        // grade lower than their peers.
 	        if (rubric.getStudentPointSum(student_id)==0) return 0;
-	        double scale = grades.get(student_id)/rubric.getStudentPointSum(student_id); 
-	        return rubric.getStudentOutcomePoints(oa.getRubricCriterion(),student_id)*scale;
+	        double scale = grades.get(student_id)/rubric.getStudentPointSum(student_id);
+            double student_score = rubric.getStudentOutcomePoints(oa.getRubricCriterion(),student_id);
+	        if (Double.isNaN(student_score)) return student_score;
+            return rubric.getStudentOutcomePoints(oa.getRubricCriterion(),student_id)*scale;
         }
         
           if (is_quiz) {
         	  return quiz.getQuestionGroups().getStudentOutcomePoints(oa,student_id);
           }
-          return 0.0;
-    }
-
-    /**
-     * get the student kpi attainment for the specified student and outcome association.
-     *
-     * @param oa - the outcome association (eg. assignment, rubric item or question bank)
-     *             to get points for
-     * @param student_id - the canvas student id to get the points for
-     * @return - the outcome attainment for the specific association.
-     */
-    public String getStudentKpiAttainment(OutcomeAssociation oa, String student_id) {
-        // return if student did not submit an assignment
-        if (!grades.containsKey(student_id)) return "X";
-
-        // if this evaluation is for this assignment - specify unknown - this will force scores to be used
-        if ((oa==null)||((oa.getRubricCriterion() == null) && (oa.getQuestionGroup() == null))) {
-            return "unknown";
-        }
-
-        if (oa.getRubricCriterion() != null) {
-            // this is related to a rubric criterion
-            return rubric.getStudentOutcomeKpiAttainment(oa.getRubricCriterion(),student_id);
-        }
-
-        return "unknown";
+          return Double.NaN;
     }
 
     /**

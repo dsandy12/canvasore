@@ -23,10 +23,6 @@ public class CanvasRubric {
     // criteria, so this should work fine.
     TreeMap<String,TreeMap<String,Double>> student_scores;
 
-    // a map of maps.  The first key is the student id.  The second key
-    // is the rubric criteria.  There should be no duplicate grades for a specific
-    // criteria, so this should work fine.
-    TreeMap<String,TreeMap<String,String>> student_kpi_ratings;
     /**
      * Representation of a single row in a canvas rubric.  This contains an ordered
      * set of ratings where the rubric ratings that are worth the most points come 
@@ -186,7 +182,6 @@ public class CanvasRubric {
             rows.add(rr);
         }
         student_scores = new TreeMap<>();
-        student_kpi_ratings = new TreeMap<>();
     }
     
     /**
@@ -247,34 +242,6 @@ public class CanvasRubric {
     }
 
     /**
-     * set the user rubric-based kpi rating for each rubric row based on information provided
-     * @param user - the user to set the scores for
-     * @param ratings - a map that contains the rubric row ID as the primary key
-     *               and the id for the rubric rating as the value
-     */
-    public void setRubricRatings(String user, TreeMap<String,String> ratings) {
-        // loop for each entry in the map
-        for(Map.Entry<String,String> entry : ratings.entrySet()) {
-            String rubric_row_id = entry.getKey();
-            String rubric_row_rating_id = entry.getValue();
-
-            // if the student scores map does not yet have an entry for this user, create it
-            if (!student_kpi_ratings.containsKey(user)) {
-                student_kpi_ratings.put(user, new TreeMap<>());
-            }
-            // search the rubric for the associated rating within this rubric
-            for (RubricRow row : rows) {
-                if (!row.getId().equals(rubric_row_id)) continue;
-                for (RubricCell rating: row) {
-                    if (rating.getId().equals(rubric_row_rating_id)) {
-                        student_kpi_ratings.get(user).put(rubric_row_id, rating.getCompetencyLevel());
-                    }
-                }
-            }
-        }
-    }
-
-    /**
      * returns the total number of points the specified user earned from the rubric.
      * This method assumes that the user scores have already been set using
      * SetRubricScores()
@@ -313,22 +280,14 @@ public class CanvasRubric {
      */
     public double getStudentOutcomePoints(String rubric_row_name, String user_id) {
         String criterion = getCriterionIdFromName(rubric_row_name);
-        if (criterion== null) return 0;
-        if (!student_scores.containsKey(user_id)) return 0;
-        return student_scores.get(user_id).get(criterion);
-    }
+        // check for a valid criterion
+        if (criterion== null) return Double.NaN;
 
-    /**
-     * return the student kpi attainment for the rubric row with the specified name
-     * @param rubric_row_name - the name of the rubric row
-     * @param user_id - the canvas student id
-     * @return the points the student earned
-     */
-    public String getStudentOutcomeKpiAttainment(String rubric_row_name, String user_id) {
-        String criterion = getCriterionIdFromName(rubric_row_name);
-        if (criterion== null) return "X";
-        if (!student_kpi_ratings.containsKey(user_id)) return "X";
-        return student_kpi_ratings.get(user_id).get(criterion);
+        // no rubric score for this user
+        if (!student_scores.containsKey(user_id)) return Double.NaN;
+
+        // otherwise, return the score
+        return student_scores.get(user_id).get(criterion);
     }
 
     /**
