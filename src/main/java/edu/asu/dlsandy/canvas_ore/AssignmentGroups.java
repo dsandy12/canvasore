@@ -81,7 +81,7 @@ public class AssignmentGroups extends ArrayList<AssignmentGroup> {
      */
     public double getStudentAssignmentPoints(OutcomeAssociation oa, String student_id) {
         AssignmentGroup assignmentGroup = getFromName(oa.getAssignmentGroupName());
-        if (assignmentGroup == null) return -1;
+        if (assignmentGroup == null) return Double.NaN;
         return assignmentGroup.getStudentOutcomePoints(oa,student_id);
     }
 
@@ -95,11 +95,15 @@ public class AssignmentGroups extends ArrayList<AssignmentGroup> {
      */
     public double getStudentAssignmentPercent(OutcomeAssociation oa, String student_id) {
         AssignmentGroup assignmentGroup = getFromName(oa.getAssignmentGroupName());
-        if (assignmentGroup == null) return -1;
+        if (assignmentGroup == null) return Double.NaN;
+
         // get the maximum number of points
         double max_points =  assignmentGroup.getMaximumOutcomePoints(oa);
         if (max_points == 0) return 0;
+
         // return student points divided by the maximum points
+        double studentPoints = assignmentGroup.getStudentOutcomePoints(oa,student_id);
+        if (Double.isNaN(studentPoints)) return studentPoints;
         return assignmentGroup.getStudentOutcomePoints(oa,student_id)/max_points;
     }
 
@@ -132,36 +136,13 @@ public class AssignmentGroups extends ArrayList<AssignmentGroup> {
     }
 
     /**
-     * get the assignment kpi rating for the specified student and outcome association.
-     *
-     * @param oa - the outcome association (eg. group, assignment, rubric item or question bank)
-     *             to get points for
-     * @param student_id - the canvas student id to get the points for
-     * @return - the kpi rating for the assignment: "E" - exceeds, "M" - meets, "I" - insufficient, "X" - not attempted
-     */
-    public String getStudentAssignmentKpiAttainment(OutcomeAssociation oa, String student_id) {
-        AssignmentGroup assignmentGroup = getFromName(oa.getAssignmentGroupName());
-        if (assignmentGroup == null) return "X";
-
-        // get the kpi attainment level
-        String attainment = assignmentGroup.getStudentOutcomeKpiAttainment(oa,student_id);
-        if (!attainment.equals("unknown")) return attainment;
-
-        // calculate the attainment by percentage
-        double percent = getStudentAssignmentPercent(oa,student_id);
-        if (percent>=.90) return "E";
-        if (percent>=.70) return "M";
-        return "I";
-    }
-
-    /**
      * return the status of student outcome attainment based on the related KPI performance
      *
      * @param outcome - the outcome to be evaluated
      * @param student_id - the canvas student id to get the points for
      * @return - "Attained", "Not Attained", "-".
      */
-    public String getStudentKPIAttainment(CanvasOutcome outcome, String student_id) {
+/*    public String getStudentKPIAttainment(CanvasOutcome outcome, String student_id) {
         for (AssignmentGroup assignment_group:this) {
             for (OutcomeAssociation association:outcome.getAssociations()) {
                 if (assignment_group.getName().equals(association.getAssignmentGroupName())) {
@@ -178,6 +159,7 @@ public class AssignmentGroups extends ArrayList<AssignmentGroup> {
         }
         return "Attained";
     }
+*/
 
     /**
      * get the outcome points for all assignments for the specified student and outcome. 

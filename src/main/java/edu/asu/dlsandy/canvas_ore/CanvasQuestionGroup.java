@@ -171,7 +171,7 @@ public class CanvasQuestionGroup {
         if (student_scores.containsKey(student_id)) {
         	return student_scores.get(student_id);
         }
-    	return 0;
+    	return Double.NaN;
     }
 
     /**

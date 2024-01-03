@@ -42,7 +42,9 @@ public class CanvasOutcome {
                     associationObject.getValue("assignment_name"),
                     associationObject.getValue("rubric_criterion"),
                     associationObject.getValue("question_group"),
-                    associationObject.getValue("question_bank")
+                    associationObject.getValue("question_bank"),
+                    (associationObject.getValue("exceeds_threshold")!=null)?associationObject.getDouble("exceeds_threshold"):-1.0,
+                    (associationObject.getValue("demonstrates_threshold")!=null)?associationObject.getDouble("demonstrates_threshold"):-1.0
             );
             associations.add(association);           
         }
@@ -79,6 +81,13 @@ public class CanvasOutcome {
         return false;
     }
 
+    public OutcomeAssociation getAssociation(OutcomeAssociation oa) {
+        for (OutcomeAssociation a:associations) {
+            if (a.matches(oa)) return a;
+        }
+        return null;
+    }
+
     /** 
      * creates a representation of the outcome in JSON format
      * @return - the JSON representation of the outcome
@@ -104,6 +113,8 @@ public class CanvasOutcome {
             if (association.getQuestionBank()!=null) {
                 association_obj.put("question_bank",new JsonValue(association.getQuestionBank()));
             }
+            association_obj.put("exceeds_threshold", new JsonValue(Double.toString(association.getExceedsThreshold())));
+            association_obj.put("demonstrates_threshold", new JsonValue(Double.toString(association.getDemonstratesThreshold())));
             array.add(association_obj);
         }
         obj.put("associations", array);

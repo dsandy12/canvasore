@@ -94,28 +94,41 @@ public class OutcomeReport {
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"$-",
                             association.getAssignmentName()+", question group: "+association.getQuestionGroup() + questionBank);                                                
                 }
-                
-                
+                symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KET$-",
+                        dfPercent.format(association.getExceedsThreshold()));
+                symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KMT$-",
+                        dfPercent.format(association.getDemonstratesThreshold()));
+
+
                 // for each student in the student list, create the symbols for the student scores
                 int student_number =0;
                 for (String student_id:student_list) {
                     student_number++;
                     if (Double.isNaN(assignment_groups.getStudentAssignmentPoints(association, student_id))) {
-                        // here if assignment was not attempted
+                        // here if assignment was not attempted or outcome is unknown
                         symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".A"+ assocNum +"$-", "-");
                         symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".A"+ assocNum +"%$-", "-");
+                        symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "X");
                     } else {
                         // Create a symbol table entry for the student's numeric score for this specific assignment.
                         symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "$-",
                                 dfDecimal.format(assignment_groups.getStudentAssignmentPoints(association, student_id)));
 
                         // Create a symbol table entry for the student's percentage score for this specific assignment.
+                        double percent = assignment_groups.getStudentAssignmentPercent(association, student_id);
                         symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "%$-",
-                                dfPercent.format(assignment_groups.getStudentAssignmentPercent(association, student_id)));
+                                dfPercent.format(percent));
 
                         // Create a symbol table entry for the student's kpi attainment for this specific assignment.
-                        symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-",
-                                assignment_groups.getStudentAssignmentKpiAttainment(association, student_id));
+                        if (Double.isNaN(percent)) {
+                            symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "X");
+                        } else if (percent>=association.getExceedsThreshold()) {
+                            symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "E");
+                        } else if (percent>=association.getDemonstratesThreshold()) {
+                            symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "A");
+                        } else {
+                            symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "I");
+                        }
                     }
                 }
             }
@@ -130,9 +143,10 @@ public class OutcomeReport {
             int total_upts=0;
             int total_attained_kpi=0;
             int total_not_attained_kpi=0;
+            int total_unknown_kpi=0;
             int student_number =0;
 
-            // loop for each student to create symbols for EAMU vector and student totals
+            // For this outcome, loop for each student to create symbols for EAMU vector and student totals
             for (String student_id:student_list) {
                     student_number++;
 
@@ -145,7 +159,32 @@ public class OutcomeReport {
                             dfPercent.format(student_outcome_avgpct));
                     
                     // calculate the kpi - related metrics for this student
-                    String student_attainment_kpi = assignment_groups.getStudentKPIAttainment(outcome, student_id);
+                    int assessmentNumber = 1;
+                    double demonstratedCount = 0;
+                    double notDemonstratedCount = 0;
+                    double unknownCount = 0;
+                    double totalCount = 0;
+                    while (symbolTable.keySet().contains("$+O" + outcomeNumber + ".S" + student_number + ".A" + assessmentNumber + "_KPI$-")) {
+                        String kpi_value = symbolTable.get("$+O" + outcomeNumber + ".S" + student_number + ".A" + assessmentNumber + "_KPI$-");
+                        switch (kpi_value) {
+                            case "E", "A" -> {
+                                totalCount++;
+                                demonstratedCount++;
+                            }
+                            case "I" -> {
+                                totalCount++;
+                                notDemonstratedCount++;
+                            }
+                            default -> {
+                                totalCount++;
+                                unknownCount++;
+                            }
+                        }
+                        assessmentNumber ++;
+                    }
+                    String student_attainment_kpi = "-";
+                    if (demonstratedCount/totalCount >= .70)  student_attainment_kpi = "Attained";
+                    if ((demonstratedCount+unknownCount)/totalCount < .70)  student_attainment_kpi = "Not Attained";
 
                     // calculate the points earned by the student across all the assignments related to this
                     // outcome
@@ -175,6 +214,7 @@ public class OutcomeReport {
                     switch (student_attainment_kpi) {
                         case "Attained" -> total_attained_kpi++;
                         case "Not Attained" -> total_not_attained_kpi++;
+                        default -> total_unknown_kpi++;
                     }
 
                     // update class percent attainment statistics for this outcome
@@ -203,20 +243,26 @@ public class OutcomeReport {
                 int exceeds_count = 0;
                 int meets_count = 0;
                 int insufficient_count = 0;
+                int unknown_count = 0;
+                int snum = 0;
                 for (String student_id : student_list) {
-                    String attainment = assignment_groups.getStudentAssignmentKpiAttainment(association,student_id);
+                    snum++;
+                    String attainment = symbolTable.get("$+O" + outcomeNumber + ".S" + snum + ".A" + assocNum + "_KPI$-");
                     switch (attainment) {
                         case "E" -> {
                             total_count++;
                             exceeds_count++;
                         }
-                        case "M" -> {
+                        case "A" -> {
                             total_count++;
                             meets_count++;
                         }
                         case "I" -> {
                             total_count++;
                             insufficient_count++;
+                        }
+                        default -> {
+                            unknown_count++;
                         }
                     }
                 }
@@ -225,6 +271,7 @@ public class OutcomeReport {
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKE$-", "-");
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKM$-", "-");
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKI$-", "-");
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKU$-", "-");
                 } else {
                     double exceeds_percent = (double)Math.round(exceeds_count*1000.0/total_count)/10.0;
                     double meets_percent = (double)Math.round(meets_count*1000.0/total_count)/10.0;
@@ -232,6 +279,10 @@ public class OutcomeReport {
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKE$-", dfDecimal.format(exceeds_percent));
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKM$-", dfDecimal.format(meets_percent));
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKI$-", dfDecimal.format(insufficient_percent));
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KE$-", Integer.toString(exceeds_count));
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KM$-", Integer.toString(meets_count));
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KI$-", Integer.toString(insufficient_count));
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KU$-", Integer.toString(unknown_count));
                 }
             }
 
@@ -245,9 +296,15 @@ public class OutcomeReport {
             symbolTable.put("$+O"+ outcomeNumber +".PVU%$-",Integer.toString(total_upct));
             if (total_attained_kpi+total_not_attained_kpi==0) {
                 symbolTable.put("$+O"+ outcomeNumber +".PMET$-","UNKNOWN");
+                symbolTable.put("$+O"+ outcomeNumber +".TMET$-","UNKNOWN");
+                symbolTable.put("$+O"+ outcomeNumber +".TNMET$-","UNKNOWN");
+                symbolTable.put("$+O"+ outcomeNumber +".TUNK$-","UNKNOWN");
             } else {
                 symbolTable.put("$+O"+ outcomeNumber +".PMET$-",
                         dfDecimal.format(100.0 * total_attained_kpi/(total_attained_kpi + total_not_attained_kpi)));
+                symbolTable.put("$+O"+ outcomeNumber +".TMET$-", Integer.toString(total_attained_kpi));
+                symbolTable.put("$+O"+ outcomeNumber +".TNMET$-", Integer.toString(total_not_attained_kpi));
+                symbolTable.put("$+O"+ outcomeNumber +".TUNK$-", Integer.toString(total_unknown_kpi));
             }
             symbolTable.put("$+O"+ outcomeNumber +".TOTALSTUDENTS$-",Integer.toString(student_list.size()));
         }
@@ -281,6 +338,7 @@ public class OutcomeReport {
             int outcome_number = 1;
             int column_count = 0;
             int row_count = 0;
+            boolean start_row_counting = false;
             try {
                 while ((line = template.readLine()) != null) {
                     switch (line.trim()) {
@@ -317,9 +375,20 @@ public class OutcomeReport {
                             } else if (line.trim().equals("Key Performance Indicators</w:t>")) {
                                 state = STATE_ASSESSMENT_LIST;
                                 assessment_count = 0;
-                            } else if (line.trim().equals("Attainment Summary</w:t>")) {
+                            } else if (line.trim().equals("KPI Threshold Table</w:t>")) {
                                 state = STATE_ATTAINMENT_SUMMARY_TABLE;
                                 row_count = 0;
+                                start_row_counting = false;
+                                assessment_count = 0;
+                            } else if (line.trim().equals("Attainment Totals</w:t>")) {
+                                    state = STATE_ATTAINMENT_SUMMARY_TABLE;
+                                    row_count = 0;
+                                    start_row_counting = false;
+                                    assessment_count = 0;
+                            } else if (line.trim().equals("Attainment by Percent of Population</w:t>")) {
+                                state = STATE_ATTAINMENT_SUMMARY_TABLE;
+                                row_count = 0;
+                                start_row_counting = false;
                                 assessment_count = 0;
                             } else if (line.trim().equals("Raw Data</w:t>")) {
                                 state = STATE_PARSE_SCORE_TABLE;
@@ -344,13 +413,16 @@ public class OutcomeReport {
                             }
                             break;
                         case STATE_ATTAINMENT_SUMMARY_TABLE:
+                            if (line.trim().equals ("A1.</w:t>")) {
+                                start_row_counting = true;
+                            }
                             if (line.trim().equals("</w:tr>")) {
                                 // this is the final specifier for a table row.
                                 column_count = 0;
-                                if (row_count > outcomes.get(outcome_number-1).getAssociations().size()) {
+                                if (start_row_counting) row_count ++;
+                                if (row_count >= outcomes.get(outcome_number-1).getAssociations().size()) {
                                     state = STATE_FLUSH_UNUSED_ROWS;
                                 }
-                                row_count ++;
                                 break;
                             }
                             break;

@@ -15,11 +15,17 @@ package edu.asu.dlsandy.canvas_ore;
  * 4. a quiz group of questions in canvas
  */
     public class OutcomeAssociation {
+        public static final double DEFAULT_EXCEEDS_THRESHOLD = 0.90;
+        public static final double DEFAULT_DEMONSTRATES_THRESHOLD = 0.70;
+
         private final String assignmentGroupName;
         private String assignmentName;
         private String rubricCriterion;
         private String questionGroup;       // used for quizzes only
         private String questionBank;        // used for quizzes only
+
+        private double exceedsThreshold;        // a percentage score at which exceptional performance is demonstrated
+        private double demonstratesThreshold;   // a percentage score at which competency has been demonstrated
         
         /**
          * constructor - initialize the outcome association based on the provided parameters.
@@ -32,7 +38,7 @@ package edu.asu.dlsandy.canvas_ore;
          *                        a specific set of questions in a quiz).  Used in conjunction with the question Bank parameter
          * @param questionBank - the name of the question bank associated with the questionGroup parameter.
          */
-        public OutcomeAssociation(String assignmentGroupName, String assignmentName, String rubricCriterion, String questionGroup, String questionBank) {
+        public OutcomeAssociation(String assignmentGroupName, String assignmentName, String rubricCriterion, String questionGroup, String questionBank, double exceedsThreshold, double demonstratesThreshold) {
             this.assignmentGroupName = assignmentGroupName;
             if ((assignmentName!=null) && !(assignmentName.equals(""))) {
                 this.assignmentName = assignmentName;
@@ -46,6 +52,19 @@ package edu.asu.dlsandy.canvas_ore;
             if ((questionBank!=null) && !(questionBank.equals(""))) {
                 this.questionBank = questionBank;
             }
+            this.exceedsThreshold = this.DEFAULT_EXCEEDS_THRESHOLD;
+            if ((exceedsThreshold >= 0)&&(exceedsThreshold<=1.0)) {
+                this.exceedsThreshold = exceedsThreshold;
+            }
+            this.demonstratesThreshold = this.DEFAULT_DEMONSTRATES_THRESHOLD;
+            if ((demonstratesThreshold >= 0)&&(demonstratesThreshold<=1.0)) {
+                this.demonstratesThreshold = demonstratesThreshold;
+            }
+            if (this.demonstratesThreshold>=this.exceedsThreshold) {
+                this.exceedsThreshold = this.DEFAULT_EXCEEDS_THRESHOLD;
+                this.demonstratesThreshold = this.DEFAULT_DEMONSTRATES_THRESHOLD;
+            }
+
         }
 
         /**
@@ -57,6 +76,8 @@ package edu.asu.dlsandy.canvas_ore;
             rubricCriterion = oa.rubricCriterion;
             questionGroup = oa.questionGroup;
             questionBank = oa.questionBank;
+            exceedsThreshold = oa.exceedsThreshold;
+            demonstratesThreshold = oa.demonstratesThreshold;
         }
         
         /**
@@ -117,7 +138,24 @@ package edu.asu.dlsandy.canvas_ore;
          */
         public String getQuestionBank() {return questionBank;}
 
-		@Override
+        public double getExceedsThreshold() {
+            return exceedsThreshold;
+        }
+
+
+    public double getDemonstratesThreshold() {
+            return demonstratesThreshold;
+        }
+
+    public void setExceedsThreshold(double exceedsThreshold) {
+        this.exceedsThreshold = exceedsThreshold;
+    }
+
+    public void setDemonstratesThreshold(double demonstratesThreshold) {
+        this.demonstratesThreshold = demonstratesThreshold;
+    }
+
+    @Override
 		/*
 		  create a string representation of the object
 		 */

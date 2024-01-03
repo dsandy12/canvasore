@@ -51,7 +51,7 @@ final Timeline updater = new Timeline(new KeyFrame(Duration.millis(100), event -
  */
 public ProgressDlg(LoadingStatus ls) {
 	this.getIcons().add( new Image(Objects.requireNonNull(CanvasOre.class.getResourceAsStream("app_icon.png"))));
-	this.setAlwaysOnTop(true);
+	this.setAlwaysOnTop(false);
 	this.ls = ls;
 	
     setTitle("Progress");

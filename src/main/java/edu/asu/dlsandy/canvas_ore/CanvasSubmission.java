@@ -19,6 +19,11 @@ public class CanvasSubmission {
     boolean grade_matches; 
     double  entered_score; 
     final boolean late;
+
+    final boolean excused;
+
+    final boolean missing;
+
     final int     attempt;
     // This tree map has the rubric row id as the key and the user score for the value
     final TreeMap<String, Double> rubric_scores;
@@ -36,6 +41,16 @@ public class CanvasSubmission {
         score = obj.getDouble("score");
         user_id = obj.getValue("user_id");
         attempt = obj.getInteger("attempt");
+        if ((obj.containsKey("submission_type"))&&(obj.getValue("submission_type")==null)) {
+            missing = true;
+        } else {
+            missing = false;
+        }
+        if (obj.containsKey("excused")) {
+            excused = obj.getBoolean("excused");
+        } else {
+            excused = false;
+        }
         grade_matches = true;
         if (obj.containsKey("grade_matches_current_submission")) {
             grade_matches = obj.getBoolean("grade_matches_current_submission");
@@ -50,6 +65,12 @@ public class CanvasSubmission {
             score = entered_score;
             entered_score = obj.getDouble("entered_score");
         }
+        // special case
+        // for assessment purposes, the student performance is unknown
+        if (excused) {
+            score = Double.NaN;
+            entered_score = Double.NaN;
+        }
         late = obj.getBoolean("late");
         JsonObject json_rubric_scores = (JsonObject)obj.get("rubric_assessment");
         if (json_rubric_scores != null) {
@@ -60,7 +81,13 @@ public class CanvasSubmission {
                String criterion_id = entry.getKey();
                JsonObject rubric_obj = (JsonObject)entry.getValue();
                if (rubric_obj==null) continue;
-               rubric_scores.put(criterion_id, rubric_obj.getDouble("points"));
+                // special cases: excused or missing when a submission is expected
+                // for assessment purposes, the student performance is unknown
+                double rubric_points = rubric_obj.getDouble("points");
+                if (excused) {
+                    rubric_points = Double.NaN;
+                }
+               rubric_scores.put(criterion_id, rubric_points);
                rubric_rating_ids.put(criterion_id, rubric_obj.getValue("rating_id"));
             }
         }
@@ -108,4 +135,11 @@ public class CanvasSubmission {
      */
     public TreeMap<String,String> getRubricRatingIds() {return rubric_rating_ids;}
 
+    public boolean isExcused() {
+        return excused;
+    }
+
+    public boolean isMissing() {
+        return missing;
+    }
 }
