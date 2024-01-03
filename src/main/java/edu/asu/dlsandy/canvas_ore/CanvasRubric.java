@@ -104,8 +104,6 @@ public class CanvasRubric {
         final String description;
         final String long_description;
 
-        String competency_level;
-        
         /**
          * constructor - initialize from the provided JsonObject
          */
@@ -114,33 +112,6 @@ public class CanvasRubric {
             id     = obj.getValue("id");
             description = obj.getValue("description");
             long_description = obj.getValue("long_description");
-
-            // attempt to assign the competency level for this rubric item based on
-            // the information coded in the description field.
-            // first, take care of default values based on the name of the field
-            competency_level = "unknown";
-            switch (description.toLowerCase()) {
-                case ("full marks"), ("full credit"), ("proficient") -> competency_level = "E";
-                case ("partial marks"), ("partial credit"), ("competent"), ("commpetent") -> competency_level = "M";
-                case ("no marks"), ("minimal marks"), ("minimal credit"), ("insufficient"), ("not proficient"), ("novice") ->
-                        competency_level = "I";
-                case ("missing"), ("not attempted") -> competency_level = "X";
-            }
-            // now look for hashtags in the long description - these will override the
-            // rating name if the hashtag exists
-            if (long_description.toLowerCase().contains("#exceeds_competency")) {
-                competency_level = "E";
-            } else if (long_description.toLowerCase().contains("#meets_competency")) {
-                competency_level = "M";
-            } else if (long_description.toLowerCase().contains("#insufficient_competency")) {
-                competency_level = "I";
-            } else if (long_description.toLowerCase().contains("#not_attempted")) {
-                competency_level = "X";
-            }
-
-                if (competency_level.equals("unknown")) {
-                System.out.println(description);
-            }
         }
         
         /**
@@ -162,11 +133,6 @@ public class CanvasRubric {
          * returns the long description for this rubric cell
          */
         public String getLongDescription() {return long_description;}
-
-        /**
-         * returns the competency level for the rubric cell
-         */
-        public String getCompetencyLevel() {return competency_level;}
     }
 
     /**

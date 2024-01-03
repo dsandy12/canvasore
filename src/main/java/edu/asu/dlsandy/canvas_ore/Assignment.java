@@ -32,6 +32,8 @@ public class Assignment {
     private static CanvasUserGroups teams = null;
     private static boolean loadedTeams = false;
     private CanvasQuiz quiz;
+
+    final private boolean submission_required;
     
     // a tree map with the student id as the key and the assignment score as the value
     private final TreeMap<String,Double> grades;
@@ -59,6 +61,11 @@ public class Assignment {
         } else {
         	is_quiz = false;
         	quiz_id = "";
+        }
+        if (obj.getValue("submission_types").equals("none")) {
+            submission_required = false;
+        } else {
+            submission_required = true;
         }
         grades = new TreeMap<>();
     }
@@ -147,12 +154,20 @@ public class Assignment {
     	                // and add grade items for each student in the group
     	                team = teams.getAssociatedGroup(submission.getUserId());
     	                if (team!=null) {
-    	                    grades.put(submission.getUserId(), submission.getScore());                    
+    	                    if ((submission_required)&&(submission.isMissing())) {
+                                grades.put(submission.getUserId(), Double.NaN);
+                            } else {
+                                grades.put(submission.getUserId(), submission.getScore());
+                            }
     	                    rubric.setRubricScores(submission.getUserId(),submission.getRubricScores());
     	                }
     	            } else {
     	                // otherwise, add a grade item for this student alone
-    	                grades.put(submission.getUserId(), submission.getScore());                    
+                        if ((submission_required)&&(submission.isMissing())) {
+                            grades.put(submission.getUserId(), Double.NaN);
+                        } else {
+                            grades.put(submission.getUserId(), submission.getScore());
+                        }
     	                rubric.setRubricScores(submission.getUserId(),submission.getRubricScores());
     	            }
     	        }

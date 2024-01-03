@@ -94,8 +94,12 @@ public class OutcomeReport {
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"$-",
                             association.getAssignmentName()+", question group: "+association.getQuestionGroup() + questionBank);                                                
                 }
-                
-                
+                symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KET$-",
+                        dfPercent.format(association.getExceedsThreshold()));
+                symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KMT$-",
+                        dfPercent.format(association.getDemonstratesThreshold()));
+
+
                 // for each student in the student list, create the symbols for the student scores
                 int student_number =0;
                 for (String student_id:student_list) {
@@ -104,6 +108,7 @@ public class OutcomeReport {
                         // here if assignment was not attempted or outcome is unknown
                         symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".A"+ assocNum +"$-", "-");
                         symbolTable.put("$+O"+ outcomeNumber +".S"+ student_number +".A"+ assocNum +"%$-", "-");
+                        symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "X");
                     } else {
                         // Create a symbol table entry for the student's numeric score for this specific assignment.
                         symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "$-",
@@ -115,12 +120,11 @@ public class OutcomeReport {
                                 dfPercent.format(percent));
 
                         // Create a symbol table entry for the student's kpi attainment for this specific assignment.
-                        // TODO - FIX THIS
                         if (Double.isNaN(percent)) {
                             symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "X");
-                        } else if (percent>=0.90) {
+                        } else if (percent>=association.getExceedsThreshold()) {
                             symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "E");
-                        } else if (percent>=0.70) {
+                        } else if (percent>=association.getDemonstratesThreshold()) {
                             symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "A");
                         } else {
                             symbolTable.put("$+O" + outcomeNumber + ".S" + student_number + ".A" + assocNum + "_KPI$-", "I");
@@ -239,6 +243,7 @@ public class OutcomeReport {
                 int exceeds_count = 0;
                 int meets_count = 0;
                 int insufficient_count = 0;
+                int unknown_count = 0;
                 int snum = 0;
                 for (String student_id : student_list) {
                     snum++;
@@ -256,6 +261,9 @@ public class OutcomeReport {
                             total_count++;
                             insufficient_count++;
                         }
+                        default -> {
+                            unknown_count++;
+                        }
                     }
                 }
                 // create the kpi statistics for this assignment/kpi
@@ -263,6 +271,7 @@ public class OutcomeReport {
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKE$-", "-");
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKM$-", "-");
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKI$-", "-");
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKU$-", "-");
                 } else {
                     double exceeds_percent = (double)Math.round(exceeds_count*1000.0/total_count)/10.0;
                     double meets_percent = (double)Math.round(meets_count*1000.0/total_count)/10.0;
@@ -270,6 +279,10 @@ public class OutcomeReport {
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKE$-", dfDecimal.format(exceeds_percent));
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKM$-", dfDecimal.format(meets_percent));
                     symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"PKI$-", dfDecimal.format(insufficient_percent));
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KE$-", Integer.toString(exceeds_count));
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KM$-", Integer.toString(meets_count));
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KI$-", Integer.toString(insufficient_count));
+                    symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KU$-", Integer.toString(unknown_count));
                 }
             }
 
@@ -283,9 +296,15 @@ public class OutcomeReport {
             symbolTable.put("$+O"+ outcomeNumber +".PVU%$-",Integer.toString(total_upct));
             if (total_attained_kpi+total_not_attained_kpi==0) {
                 symbolTable.put("$+O"+ outcomeNumber +".PMET$-","UNKNOWN");
+                symbolTable.put("$+O"+ outcomeNumber +".TMET$-","UNKNOWN");
+                symbolTable.put("$+O"+ outcomeNumber +".TNMET$-","UNKNOWN");
+                symbolTable.put("$+O"+ outcomeNumber +".TUNK$-","UNKNOWN");
             } else {
                 symbolTable.put("$+O"+ outcomeNumber +".PMET$-",
                         dfDecimal.format(100.0 * total_attained_kpi/(total_attained_kpi + total_not_attained_kpi)));
+                symbolTable.put("$+O"+ outcomeNumber +".TMET$-", Integer.toString(total_attained_kpi));
+                symbolTable.put("$+O"+ outcomeNumber +".TNMET$-", Integer.toString(total_not_attained_kpi));
+                symbolTable.put("$+O"+ outcomeNumber +".TUNK$-", Integer.toString(total_unknown_kpi));
             }
             symbolTable.put("$+O"+ outcomeNumber +".TOTALSTUDENTS$-",Integer.toString(student_list.size()));
         }
@@ -319,6 +338,7 @@ public class OutcomeReport {
             int outcome_number = 1;
             int column_count = 0;
             int row_count = 0;
+            boolean start_row_counting = false;
             try {
                 while ((line = template.readLine()) != null) {
                     switch (line.trim()) {
@@ -355,9 +375,20 @@ public class OutcomeReport {
                             } else if (line.trim().equals("Key Performance Indicators</w:t>")) {
                                 state = STATE_ASSESSMENT_LIST;
                                 assessment_count = 0;
-                            } else if (line.trim().equals("Attainment Summary</w:t>")) {
+                            } else if (line.trim().equals("KPI Threshold Table</w:t>")) {
                                 state = STATE_ATTAINMENT_SUMMARY_TABLE;
                                 row_count = 0;
+                                start_row_counting = false;
+                                assessment_count = 0;
+                            } else if (line.trim().equals("Attainment Totals</w:t>")) {
+                                    state = STATE_ATTAINMENT_SUMMARY_TABLE;
+                                    row_count = 0;
+                                    start_row_counting = false;
+                                    assessment_count = 0;
+                            } else if (line.trim().equals("Attainment by Percent of Population</w:t>")) {
+                                state = STATE_ATTAINMENT_SUMMARY_TABLE;
+                                row_count = 0;
+                                start_row_counting = false;
                                 assessment_count = 0;
                             } else if (line.trim().equals("Raw Data</w:t>")) {
                                 state = STATE_PARSE_SCORE_TABLE;
@@ -382,13 +413,16 @@ public class OutcomeReport {
                             }
                             break;
                         case STATE_ATTAINMENT_SUMMARY_TABLE:
+                            if (line.trim().equals ("A1.</w:t>")) {
+                                start_row_counting = true;
+                            }
                             if (line.trim().equals("</w:tr>")) {
                                 // this is the final specifier for a table row.
                                 column_count = 0;
-                                if (row_count > outcomes.get(outcome_number-1).getAssociations().size()) {
+                                if (start_row_counting) row_count ++;
+                                if (row_count >= outcomes.get(outcome_number-1).getAssociations().size()) {
                                     state = STATE_FLUSH_UNUSED_ROWS;
                                 }
-                                row_count ++;
                                 break;
                             }
                             break;

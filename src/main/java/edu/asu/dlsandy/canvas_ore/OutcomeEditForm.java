@@ -9,6 +9,8 @@ package edu.asu.dlsandy.canvas_ore;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -40,7 +42,7 @@ public class OutcomeEditForm extends Stage {
     final AssignmentGroups assignmentGroups;
     boolean exitOkay;
     final Image warnImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("warning.bmp")));
-    
+
     /**
      * constructor - initialize using list of assignment groups.  This constructor should be
      * used for new outcomes
@@ -65,8 +67,23 @@ public class OutcomeEditForm extends Stage {
         createForm();      
         titleField.setText(outcome.getTitle());
         descriptionField.setText(outcome.getDescription());
-    }    
-    
+    }
+
+    static EventHandler checkboxClickedEvent() {
+        return new EventHandler() {
+            @Override
+            public void handle (Event e) {
+                CheckBoxTreeItem<OutcomeAssociation> source = (CheckBoxTreeItem<OutcomeAssociation>) e.getSource();
+                if (source.isSelected()) {
+                    // checkbox was clicked;
+                    ThresholdDlg dlg = new ThresholdDlg(source.getValue());
+                    source.getValue().setExceedsThreshold(dlg.getExceedsThreshold());
+                    source.getValue().setDemonstratesThreshold(dlg.getDemonstratesThreshold());
+                }
+            }
+        };
+    }
+
     /**
      * Helper function to add the associations to the dialog box's picker tree.  
      */
@@ -74,20 +91,20 @@ public class OutcomeEditForm extends Stage {
       // loop for each assignment group
       for (AssignmentGroup group:assignmentGroups) {
     	  // create the new association and tree element
-    	  CheckBoxTreeItem<OutcomeAssociation> groupItem = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(),null,null,null,null));
-    	  groupItem.setExpanded(true);
+    	  CheckBoxTreeItem<OutcomeAssociation> groupItem = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(),null,null,null,null,-1.0,-1.0));
+          groupItem.setExpanded(true);
 
     	  // loop for every assignment associated with the group
     	  Assignments assignments = group.getAssignments();
           if (assignments!=null) {
               for (Assignment assignment:assignments) {
             	  // create a new assignment item
-                  CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(),assignment.getName(),null,null,null));
+                  CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(),assignment.getName(),null,null,null,-1.0,-1.0));
                   if ((!assignment.isQuiz())&&(assignment.getRubric()!=null)) {
                       CanvasRubric rubric = assignment.getRubric();
                       if (rubric.getRowCount()>1) {
                           for (int j=0;j<rubric.getRowCount();j++) {
-                              CheckBoxTreeItem<OutcomeAssociation> sub_item = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(),assignment.getName(),rubric.getRowDescription(j),null,null));
+                              CheckBoxTreeItem<OutcomeAssociation> sub_item = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(),assignment.getName(),rubric.getRowDescription(j),null,null,-1.0,-1.0));
                               sub_item.setIndependent(true);
                               item.getChildren().add(sub_item);
                               item.setExpanded(true);
@@ -101,7 +118,7 @@ public class OutcomeEditForm extends Stage {
                 			  if (qgroup.getBank()!=null) {
                 				  bankTitle = qgroup.getBank().getTitle();
                 			  }
-                              CheckBoxTreeItem<OutcomeAssociation> sub_item = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(), assignment.getName(), null, qgroup.getName(), bankTitle));
+                              CheckBoxTreeItem<OutcomeAssociation> sub_item = new CheckBoxTreeItem<>(new OutcomeAssociation(group.getName(), assignment.getName(), null, qgroup.getName(), bankTitle, -1.0, -1.0));
                               sub_item.setIndependent(true);
                               item.getChildren().add(sub_item);
                               item.setExpanded(true);                			  
@@ -165,7 +182,7 @@ public class OutcomeEditForm extends Stage {
             
                 // here if the assignment is not found - add the association to the top of this
                 // assignment group
-            	OutcomeAssociation oa2 = new OutcomeAssociation(oa.getAssignmentGroupName(),oa.getAssignmentName(),null,null,null);
+            	OutcomeAssociation oa2 = new OutcomeAssociation(oa.getAssignmentGroupName(),oa.getAssignmentName(),null,null,null,oa.getExceedsThreshold(), oa.getDemonstratesThreshold());
                 CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<>(oa2);
                 item.setExpanded(true);
                 item.setIndependent(true);
@@ -177,7 +194,7 @@ public class OutcomeEditForm extends Stage {
         }
         
     	// Here if the top-level association is not found.  Add it to the tree
-    	OutcomeAssociation oa1 = new OutcomeAssociation(oa.getAssignmentGroupName(),null,null,null,null);
+    	OutcomeAssociation oa1 = new OutcomeAssociation(oa.getAssignmentGroupName(),null,null,null,null,-1.0,-1.0);
 	    CheckBoxTreeItem<OutcomeAssociation> item = new CheckBoxTreeItem<>(oa1);
 	    item.setIndependent(true);
 	    ImageView rubricWarningIcon = new ImageView(warnImage);
@@ -236,7 +253,7 @@ public class OutcomeEditForm extends Stage {
         Label title = new Label("Title");
         grid.add(title, 0, 0);
 
-        CheckBoxTreeItem<OutcomeAssociation> root = new CheckBoxTreeItem<>(new OutcomeAssociation("",null,null,null,null));
+        CheckBoxTreeItem<OutcomeAssociation> root = new CheckBoxTreeItem<>(new OutcomeAssociation("",null,null,null,null,-1.0,-1.0));
         root.setExpanded(true);
         assignmentList = new TreeView<>(root);
         assignmentList.setCellFactory(CheckBoxTreeCell.forTreeView());
@@ -247,9 +264,9 @@ public class OutcomeEditForm extends Stage {
         ArrayList<OutcomeAssociation> outcomeAssociations = outcome.getAssociations();
         for (OutcomeAssociation oa:outcomeAssociations) {
         	// check L1
-        	OutcomeAssociation oa1 = new OutcomeAssociation(oa.getAssignmentGroupName(),null,null,null,null);
+        	OutcomeAssociation oa1 = new OutcomeAssociation(oa.getAssignmentGroupName(),null,null,null,null,-1,-1);
        		addMissingAssociation(root,oa1);
-       		OutcomeAssociation oa2 = new OutcomeAssociation(oa.getAssignmentGroupName(),oa.getAssignmentName(),null,null,null);
+       		OutcomeAssociation oa2 = new OutcomeAssociation(oa.getAssignmentGroupName(),oa.getAssignmentName(),null,null,null,oa.getExceedsThreshold(),oa.getDemonstratesThreshold());
        		addMissingAssociation(root,oa2);
     		addMissingAssociation(root,oa);
         }      
@@ -258,6 +275,7 @@ public class OutcomeEditForm extends Stage {
         assignmentList.setShowRoot(false);
         grid.add(assignmentList, 0, 8, 4, 6);
         setCheckBoxes(root, outcome);
+        setThresholds(root, outcome);
     }    
 
     /*
@@ -268,9 +286,27 @@ public class OutcomeEditForm extends Stage {
     	if (outcome.associationExists(localroot.getValue())) {
     		localroot.setSelected(true);
     	}
-    	for (TreeItem<OutcomeAssociation> child:localroot.getChildren()) {
+        // now that the initial state of the check box is set, set the event handler for the item
+        localroot.addEventHandler(CheckBoxTreeItem.checkBoxSelectionChangedEvent(), checkboxClickedEvent());
+
+        for (TreeItem<OutcomeAssociation> child:localroot.getChildren()) {
     		setCheckBoxes((CheckBoxTreeItem<OutcomeAssociation>)child,outcome);
     	}
+    }
+
+    private void setThresholds(CheckBoxTreeItem<OutcomeAssociation>localroot, CanvasOutcome outcome) {
+        // hilight the cells based on the outcome object's associations
+        if (outcome.associationExists(localroot.getValue())) {
+            OutcomeAssociation association = outcome.getAssociation(localroot.getValue());
+            if ((association.getDemonstratesThreshold()>=0) && (association.getDemonstratesThreshold()<=1.0)) {
+                // here for a custom threshold.  Set a visual indicator
+                localroot.getValue().setExceedsThreshold(association.getExceedsThreshold());
+                localroot.getValue().setDemonstratesThreshold(association.getDemonstratesThreshold());
+            }
+        }
+        for (TreeItem<OutcomeAssociation> child:localroot.getChildren()) {
+            setThresholds((CheckBoxTreeItem<OutcomeAssociation>)child,outcome);
+        }
     }
     
     /*
