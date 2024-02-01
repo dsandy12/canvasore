@@ -6,6 +6,8 @@ package edu.asu.dlsandy.canvas_ore;
  */
 
 
+import static java.lang.Character.isDigit;
+
 /**
  * Represents an abstract factory class that builds JsonAbstractValues based on a Json-formatted string
  */
@@ -71,7 +73,7 @@ public class JsonResultFactory {
             stringPosition++;
             // here if we need to create a value set
             JsonArray cs = new JsonArray();
-            while ((stringPosition <str.length())&&((str.charAt(stringPosition)=='"')||str.charAt(stringPosition)=='{')) {
+            while ((stringPosition <str.length())&&((str.charAt(stringPosition)=='"')||str.charAt(stringPosition)=='{')||Character.isDigit(str.charAt(stringPosition))) {
                 // create and build the object or string
                 JsonAbstractValue obj = builder();
                 if (obj==null) {
