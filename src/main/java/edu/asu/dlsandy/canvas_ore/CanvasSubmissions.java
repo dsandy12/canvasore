@@ -28,7 +28,7 @@ public class CanvasSubmissions extends ArrayList<CanvasSubmission> {
 	public CanvasSubmissions(String course_id,String assignment_id)  {
         try {
             JsonArray jsonArray;
-            jsonArray = (JsonArray) RequesterSso.apiGetRequest("courses/"+course_id+"/assignments/"+assignment_id+"/submissions?include[]=rubric_assessment;per_page=100");
+            jsonArray = (JsonArray) RequesterSso.apiGetRequest("courses/"+course_id+"/assignments/"+assignment_id+"/submissions?include[]=rubric_assessment&per_page=100");
             if (jsonArray != null) init(jsonArray);
         } catch (IOException ex) {
             Logger.getLogger(Assignments.class.getName()).log(Level.SEVERE, null, ex);
