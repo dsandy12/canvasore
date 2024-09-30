@@ -6,11 +6,7 @@ package edu.asu.dlsandy.canvas_ore;
  */
 
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -18,7 +14,14 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellCopyPolicy;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.util.CellUtil;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import javafx.stage.FileChooser;
 
 /**
@@ -98,6 +101,10 @@ public class OutcomeReport {
                         dfPercent.format(association.getExceedsThreshold()));
                 symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KMT$-",
                         dfPercent.format(association.getDemonstratesThreshold()));
+                symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KET_$-",
+                        dfDecimal.format(association.getExceedsThreshold()));
+                symbolTable.put("$+O"+ outcomeNumber +".A"+ assocNum +"KMT_$-",
+                        dfDecimal.format(association.getDemonstratesThreshold()));
 
 
                 // for each student in the student list, create the symbols for the student scores
@@ -514,7 +521,229 @@ public class OutcomeReport {
             Logger.getLogger(OutcomeReport.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
+    // find a spreadsheet row that starts with the specified text.  If not found, return -1
+    private int findRowWith(XSSFSheet sheet, String findText) {
+        for (int rowpos = 0; rowpos<1000; rowpos++) {
+            if (sheet.getRow(rowpos) == null) {
+                continue;
+            }
+            if (sheet.getRow(rowpos).getCell(0) == null) {
+                continue;
+            }
+            if (Objects.equals(sheet.getRow(rowpos).getCell(0).getStringCellValue(), findText)) {
+                return rowpos;
+            }
+        }
+        return -1;
+    }
+
+    private void setCell(XSSFSheet sheet, int row, int column, String value) {
+        try {
+            // set as double
+            sheet.getRow(row).getCell(column).setCellValue(Double.parseDouble(value));
+        } catch (Exception ignored) {
+            // set as string
+            sheet.getRow(row).getCell(column).setCellValue(value);
+        }
+    }
+
+    /*
+     * helper function to create a report using a template with the specified filename
+     */
+    private void createExcelKpiReport() {
+        try {
+            // Reading file from local directory
+            InputStream inputstream = CanvasOre.class.getResourceAsStream("template.xlsx");
+
+            // Create Workbook instance
+            XSSFWorkbook workbook = new XSSFWorkbook(inputstream);
+            inputstream.close();
+
+            // update the main sheet
+            XSSFSheet sheet = workbook.getSheet("Methodology");
+            sheet.getRow(1).getCell(0).setCellValue(symbolTable.get("$+CLASSNAME$-"));
+            sheet.getRow(2).getCell(0).setCellValue("Generated on "+ symbolTable.get("$+DATE$-"));
+
+            // Create a copy of the template sheet for each outcome
+            for (int outcomeNumber = 1; outcomeNumber <= outcomes.size();outcomeNumber++) {
+                CanvasOutcome outcome = outcomes.get(outcomeNumber - 1);
+                String sheetName = "Outcome " + outcomeNumber;
+                workbook.cloneSheet(1, sheetName);
+                sheet = workbook.getSheet(sheetName);
+                String outcomePrefix = "$+O"+outcomeNumber;
+                sheet.getRow(0).getCell(0).setCellValue(sheetName + " - " + symbolTable.get(outcomePrefix+".NAME$-"));
+                sheet.getRow(2).getCell(0).setCellValue(symbolTable.get(outcomePrefix+".DESCRIPTION$-"));
+
+                // add the attainment descriptions
+                int headerRow = findRowWith(sheet, "Key Performance Indicators");
+                if (headerRow >= 0) {
+                    int insertRow = headerRow + 1;
+                    for (int i = 0; i<outcome.getAssociations().size(); i++) {
+                        String assocNum = "A"+(i+1);
+                        String key = outcomePrefix+"."+assocNum+"$-";
+                        if (i != 0) {
+                            // insert a new row
+                            sheet.shiftRows(insertRow, sheet.getLastRowNum(),1);
+                            sheet.createRow(insertRow);
+                            // copy the cell formatting from the first row
+                            sheet.copyRows(insertRow-1, insertRow-1, insertRow, new CellCopyPolicy());
+                        }
+                        sheet.getRow(insertRow).getCell(0).setCellValue(assocNum+". "+symbolTable.get(key));
+                        insertRow ++;
+                    }
+                }
+
+                // add the attainment summary
+                headerRow = findRowWith(sheet, "KPI Threshold Table");
+                if (headerRow >= 0) {
+                    int insertRow = headerRow + 2;
+                    for (int i = 0; i<outcome.getAssociations().size(); i++) {
+                        String assocNum = "A"+(i+1);
+                        String key1 = outcomePrefix+"."+assocNum+"KET_$-";
+                        String key2 = outcomePrefix+"."+assocNum+"KMT_$-";
+                        if (i != 0) {
+                            // insert a new row
+                            sheet.shiftRows(insertRow, sheet.getLastRowNum(),1);
+                            sheet.createRow(insertRow);
+                            // copy the cell formatting from the first row
+                            sheet.copyRows(insertRow-1, insertRow-1, insertRow, new CellCopyPolicy());
+                        }
+                        sheet.getRow(insertRow).getCell(0).setCellValue(assocNum+". ");
+                        setCell(sheet, insertRow,1, symbolTable.get(key1));
+                        setCell(sheet, insertRow,3, symbolTable.get(key2));
+                        insertRow ++;
+                    }
+                }
+
+                // add the attainment percentages
+                headerRow = findRowWith(sheet, "Attainment by Percent of Population");
+                if (headerRow >= 0) {
+                    // set the total percentage attained
+                    setCell(sheet, headerRow+1, 3,symbolTable.get(outcomePrefix+".PMET$-"));
+                    int insertRow = headerRow + 3;
+                    for (int i = 0; i<outcome.getAssociations().size(); i++) {
+                        String assocNum = "A"+(i+1);
+                        String key1 = outcomePrefix+"."+assocNum+"PKE$-";
+                        String key2 = outcomePrefix+"."+assocNum+"PKM$-";
+                        String key3 = outcomePrefix+"."+assocNum+"PKI$-";
+                        if (i != 0) {
+                            // insert a new row
+                            sheet.shiftRows(insertRow, sheet.getLastRowNum(),1);
+                            sheet.createRow(insertRow);
+                            // copy the cell formatting from the first row
+                            sheet.copyRows(insertRow-1, insertRow-1, insertRow, new CellCopyPolicy());
+                        }
+                        sheet.getRow(insertRow).getCell(0).setCellValue(assocNum+". ");
+                        setCell(sheet, insertRow,1, symbolTable.get(key1));
+                        setCell(sheet, insertRow,3, symbolTable.get(key2));
+                        setCell(sheet, insertRow,5, symbolTable.get(key3));
+                        insertRow ++;
+                    }
+                }
+
+                // add the attainment totals
+                headerRow = findRowWith(sheet, "Attainment Totals");
+                if (headerRow >= 0) {
+                    // set the total percentage attained
+                    setCell(sheet, headerRow+1,4,symbolTable.get(outcomePrefix+".TMET$-"));
+                    setCell(sheet, headerRow+2,4,symbolTable.get(outcomePrefix+".TNMET$-"));
+                    setCell(sheet, headerRow+3,4,symbolTable.get(outcomePrefix+".TUNK$-"));
+                    int insertRow = headerRow + 5;
+                    for (int i = 0; i<outcome.getAssociations().size(); i++) {
+                        String assocNum = "A"+(i+1);
+                        String key1 = outcomePrefix+"."+assocNum+"KE$-";
+                        String key2 = outcomePrefix+"."+assocNum+"KM$-";
+                        String key3 = outcomePrefix+"."+assocNum+"KI$-";
+                        String key4 = outcomePrefix+"."+assocNum+"KU$-";
+                        if (i != 0) {
+                            // insert a new row
+                            sheet.shiftRows(insertRow, sheet.getLastRowNum(),1);
+                            sheet.createRow(insertRow);
+                            // copy the cell formatting from the first row
+                            sheet.copyRows(insertRow-1, insertRow-1, insertRow, new CellCopyPolicy());
+                        }
+                        sheet.getRow(insertRow).getCell(0).setCellValue(assocNum+". ");
+                        setCell(sheet, insertRow,1,symbolTable.get(key1));
+                        setCell(sheet, insertRow,3,symbolTable.get(key2));
+                        setCell(sheet, insertRow,5,symbolTable.get(key3));
+                        setCell(sheet, insertRow,7,symbolTable.get(key4));
+                        insertRow ++;
+                    }
+                }
+
+                // add the raw data
+                headerRow = findRowWith(sheet, "Raw Data");
+                if (headerRow >= 0) {
+                    // Create the proper number of columns in the table
+                    for ( int i = 0; i < outcome.getAssociations().size(); i++) {
+                        // copy the cell formatting from the first row
+
+                        Cell dest = sheet.getRow(headerRow+2).createCell(i+2);
+                        Cell src = sheet.getRow(headerRow+2).getCell(1);
+                        CellUtil.copyCell(src, dest, new CellCopyPolicy(), null);
+                        if (i == outcome.getAssociations().size()-1) {
+                            dest.setCellValue("Attained");
+                        } else {
+                            String assocNum = "A" + (i + 2);
+                            dest.setCellValue(assocNum);
+                        }
+
+                        dest = sheet.getRow(headerRow+3).createCell(i+2);
+                        src = sheet.getRow(headerRow+3).getCell(1);
+                        CellUtil.copyCell(src, dest, new CellCopyPolicy(), null);
+                    }
+
+                    // set the total percentage attained
+                    int insertRow = headerRow + 3;
+                    for (int snum = 0; snum<student_list.size();snum++) {
+                        if (snum != 0) {
+                            // insert a new row
+                            if (insertRow<sheet.getLastRowNum()) {
+                                sheet.shiftRows(insertRow, sheet.getLastRowNum(), 1);
+                            }
+                            sheet.createRow(insertRow);
+                            // copy the cell formatting from the first row
+                            sheet.copyRows(insertRow - 1, insertRow - 1, insertRow, new CellCopyPolicy());
+                        }
+                        // place the student number in the leftmost column
+                        sheet.getRow(insertRow).getCell(0).setCellValue("S"+(snum+1));
+
+                        // place the individual attainment values
+                        for (int i = 0; i < outcome.getAssociations().size()+1; i++) {
+                            String assocNum = "A" + (i + 1);
+                            String key = outcomePrefix + ".S" + (snum+1) + "." + assocNum + "_KPI$-";
+                            if (i == outcome.getAssociations().size()) {
+                                key = outcomePrefix + ".S" + (snum+1) + ".ATTAINED$-";
+                            }
+                            sheet.getRow(insertRow).getCell(i+1).setCellValue(symbolTable.get(key));
+                        }
+                        insertRow++;
+                    }
+                }
+            }
+            // remove the template sheet
+            workbook.removeSheetAt(1);
+
+            // get the output file name
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save Outcome Report");
+            fileChooser.setInitialDirectory(new File(System.getProperty("user.dir")));
+            fileChooser.setInitialFileName(outcomes.getCourseId());
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("XLSX File","*.xlsx"));
+            File outfile = fileChooser.showSaveDialog(null);
+            if (outfile==null) {
+                return;
+            }
+            FileOutputStream outfilestream = new FileOutputStream(outfile);
+            workbook.write(outfilestream);
+            workbook.close();
+            outfilestream.close();
+        } catch (Exception ex) {
+            Logger.getLogger(OutcomeReport.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     /**
      * Constructor - create an outome report and save it to disk based on the input
      * parameters.
@@ -548,9 +777,16 @@ public class OutcomeReport {
         
         // create the report;
         switch (reportType) {
-            case "points" -> createReportFromTemplate("Outcomes By Points.xml");
-            case "percent" -> createReportFromTemplate("Outcomes By Percent.xml");
-            case "kpi" -> createReportFromTemplate("Outcomes By KPI.xml");
+            case "points":
+                createReportFromTemplate("Outcomes By Points.xml");
+                break;
+            case "percent":
+                createReportFromTemplate("Outcomes By Percent.xml");
+                break;
+            case "kpi":
+                // createReportFromTemplate("Outcomes By KPI.xml");
+                createExcelKpiReport();
+                break;
         }
     }
 }
